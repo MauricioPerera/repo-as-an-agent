@@ -2,6 +2,28 @@
 
 Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
+## [v1.1.1] - 2026-10-23
+
+Guía visual del gestor de tareas y acceso directo desde el README.
+
+### Añadido
+
+- [Sección de tareas en la landing](https://mauricioperera.github.io/repo-as-an-agent/#tareas) con ejemplos interactivos de los estados **pendiente**, **en curso**, **bloqueada** y **terminada**.
+- Ejemplos de avance parcial, motivo de bloqueo y cierre con evidencia por criterio y resultado escrito.
+- Diagrama de puntos de guardado que explica cómo vincular avances a una tarea y por qué guardar no la termina automáticamente.
+- Cuatro pedidos copiables para el agente y una guía técnica desplegable con comandos copiables, navegación por teclado y diseño adaptable a escritorio y móvil.
+- Enlace directo desde la sección de tareas del README a la nueva guía visual de la landing.
+
+### Actualizado
+
+- La cabecera de la landing destaca el gestor incorporado en v1.1.0 y la página muestra las **72 comprobaciones del motor**: 38 generales y 34 del gestor de tareas.
+
+### Verificación
+
+- Estados, contenido de cierre y los cinco botones de copia comprobados en escritorio de **1280 px** y vista móvil de **390 px**, sin desbordamientos horizontales.
+- Enlace del README comprobado desde GitHub: abre la landing y sitúa la página al inicio de la sección de tareas.
+- Pruebas generales y del gestor aprobadas en Linux, macOS y Windows; siete pruebas de la landing, validación de JavaScript y construcción pública aprobadas.
+
 ## [v1.1.0] - 2026-10-23
 
 Seguimiento de tareas con evidencia y puntos de guardado, junto con una landing para aprender a usar la plantilla.
@@ -57,5 +79,6 @@ Primera versión estable de la plantilla.
 - Distribución bajo la [licencia MIT](LICENSE).
 - Copyright (c) 2026 Mauricio Perera.
 
+[v1.1.1]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.1.1
 [v1.1.0]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.1.0
 [v1.0.0]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.0.0
