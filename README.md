@@ -70,3 +70,7 @@ automáticamente a los rescates. Si una restauración pudiera sobrescribir uno d
 ellos, `undo-safe` devuelve `UNDO_STATUS=BLOCKED_IGNORED_FILES` antes de cambiar
 archivos o crear un rescate. Mueve los archivos indicados fuera del repositorio
 antes de volver a intentar. Los archivos excluidos sin colisión permanecen intactos.
+
+## Licencia
+
+Este proyecto se distribuye bajo la [licencia MIT](LICENSE).
