@@ -11,12 +11,13 @@ TMP=$(mktemp -d "${TMPDIR:-/tmp}/agty-tasks.XXXXXX")
 cleanup() {
     [ -z "$EDIT_FILE" ] || rm -f "$EDIT_FILE"
     [ -z "$LOCK" ] || rmdir "$LOCK"
-    rm -f "$TMP/paths" "$TMP/log" "$TMP/selected" "$TMP/msg"
+    rm -f "$TMP/paths" "$TMP/log" "$TMP/selected" "$TMP/msg" "$TMP/artifacts"
     rmdir "$TMP"
 }
 trap cleanup EXIT
 trap 'exit 1' HUP INT TERM
 fail() { printf 'TASK_STATUS=FAIL\nERROR=%s\n' "$1"; exit 1; }
+. "$SCRIPT_DIR/task-artifacts.sh"
 valid_id() { printf '%s\n' "$1" | LC_ALL=C grep -Eq '^T-[0-9a-f]{12}$'; }
 require_text() {
     case "$1" in *'
@@ -44,6 +45,7 @@ begin_edit() {
 }
 finish_edit() {
     LC_ALL=C awk -v expected_id="$ID" -v display="$FILE" -f "$SCRIPT_DIR/task-format.awk" "$EDIT_FILE" || fail "La operación no cumple las reglas de la tarea"
+    add_validate "$EDIT_FILE"
     [ "$(git hash-object -- "$FILE")" = "$BEFORE" ] || fail "La tarea cambió mientras se editaba; se conserva la versión más reciente"
     mv "$EDIT_FILE" "$FILE"
     EDIT_FILE=
@@ -58,6 +60,8 @@ Uso: sh .agents/scripts/tasks.sh <operación>
   status ID pendiente|"en curso"|bloqueada|terminada ["motivo o resultado"]
   verify ID número "evidencia observada"
   unverify ID número
+  agree ID ruta punto "qué se acordó y de dónde surge"
+  deliver ID número ruta punto "qué se comprobó"
   checkpoint ID "nota del punto de guardado"
   history ID [límite]
   lint
@@ -144,11 +148,18 @@ case "$COMMAND" in
         lock_tasks
         load_task "$1"
         [ "$STATE" != terminada ] || fail "Reabre la tarea con un motivo antes de modificar sus criterios"
+        if [ "$COMMAND" = verify ] && [ "$(field add)" = yes ]; then
+            fail "En el piloto ADD usa deliver para vincular la evidencia al criterio y a su punto"
+        fi
         NUMBER=$2
         case "$NUMBER" in ''|*[!0-9]*|0|0*) fail "Número de criterio inválido" ;; esac
         [ "${#NUMBER}" -le 6 ] && [ "$NUMBER" -le "$(field criteria)" ] || fail "No existe ese criterio"
         begin_edit
         TASK_EVIDENCE=${3:-} LC_ALL=C awk -v number="$NUMBER" -v action="$COMMAND" '
+            /^## Evidencias de entrega$/ {delivery_section=1; delivery_skip=0}
+            /^## / && $0 != "## Evidencias de entrega" {delivery_section=0; delivery_skip=0}
+            delivery_section && /^### Criterio / {delivery_skip=(substr($0, 14) + 0 == number)}
+            delivery_skip {next}
             /^## / {criteria=($0 == "## Criterios de aceptación"); skip=0}
             criteria && /^- \[[ x]\] / {
                 n++; skip=(n == number)
@@ -159,6 +170,69 @@ case "$COMMAND" in
                 }
             }
             criteria && skip && /^  Evidencia: / {next}
+            {print}
+        ' "$FILE" > "$EDIT_FILE"
+        finish_edit
+        ;;
+    agree)
+        [ "$#" -eq 4 ] || fail "agree requiere ID, ruta, punto y el acuerdo observado"
+        require_text "$2"; require_text "$3"; require_text "$4"
+        lock_tasks
+        load_task "$1"
+        [ "$STATE" != terminada ] || fail "Reabre la tarea con un motivo antes de cambiar el acuerdo"
+        add_artifact "$2" "$3"
+        ADD_NEW=$(printf '%s\t%s\t%s' "$2" "$ADD_POINT" "$4")
+        if [ "$(field agreement)" = "$ADD_NEW" ]; then
+            printf 'TASK_STATUS=NO_CHANGES\nTASK_ID=%s\n' "$ID"
+            exit 0
+        fi
+        begin_edit
+        TASK_ARTIFACT=$2 TASK_POINT=$ADD_POINT TASK_NOTE=$4 LC_ALL=C awk '
+            /^## / {
+                skip=($0 == "## Referencia acordada" || $0 == "## Evidencias de entrega")
+                criteria=($0 == "## Criterios de aceptación")
+            }
+            skip {next}
+            criteria && /^- \[[ x]\] / {print "- [ ] " substr($0, 7); next}
+            criteria && /^  Evidencia: / {next}
+            {print}
+            END {
+                print "\n## Referencia acordada\nArchivo: " ENVIRON["TASK_ARTIFACT"]
+                print "Punto: " ENVIRON["TASK_POINT"] "\nAcuerdo: " ENVIRON["TASK_NOTE"]
+                print "\n## Evidencias de entrega\n"
+            }
+        ' "$FILE" > "$EDIT_FILE"
+        finish_edit
+        ;;
+    deliver)
+        [ "$#" -eq 5 ] || fail "deliver requiere ID, número de criterio, ruta, punto y observación"
+        require_text "$3"; require_text "$4"; require_text "$5"
+        lock_tasks
+        load_task "$1"
+        [ "$STATE" != terminada ] || fail "Reabre la tarea con un motivo antes de modificar sus entregas"
+        [ "$(field add)" = yes ] || fail "Registra primero una referencia acordada con agree"
+        NUMBER=$2
+        case "$NUMBER" in ''|*[!0-9]*|0|0*) fail "Número de criterio inválido" ;; esac
+        [ "${#NUMBER}" -le 6 ] && [ "$NUMBER" -le "$(field criteria)" ] || fail "No existe ese criterio"
+        add_artifact "$3" "$4"
+        begin_edit
+        TASK_ARTIFACT=$3 TASK_POINT=$ADD_POINT TASK_NOTE=$5 LC_ALL=C awk -v number="$NUMBER" '
+            function record() {
+                print "### Criterio " number "\nArchivo: " ENVIRON["TASK_ARTIFACT"]
+                print "Punto: " ENVIRON["TASK_POINT"] "\nObservación: " ENVIRON["TASK_NOTE"] "\n"
+            }
+            /^## / {
+                delivery=($0 == "## Evidencias de entrega"); skip=0
+                criteria=($0 == "## Criterios de aceptación"); criterion_skip=0
+                if (delivery) {print; print ""; record(); next}
+            }
+            delivery && /^### Criterio / {skip=(substr($0, 14) + 0 == number)}
+            skip {next}
+            criteria && /^- \[[ x]\] / {
+                n++; criterion_skip=(n == number)
+                if (criterion_skip) {print "- [x] " substr($0, 7); print "  Evidencia: " ENVIRON["TASK_NOTE"]; next}
+            }
+            criteria && criterion_skip && /^  Evidencia: / {next}
             {print}
         ' "$FILE" > "$EDIT_FILE"
         finish_edit
@@ -177,6 +251,12 @@ case "$COMMAND" in
         printf 'TASK_HISTORY_STATUS=OK\nTASK_ID=%s\n' "$ID"
         if git rev-parse --verify HEAD >/dev/null 2>&1; then
             git log --format='%H' -- "$TASK_DIR/$ID.md" > "$TMP/paths"
+            FILE=$TASK_DIR/$ID.md
+            if [ -f "$FILE" ] && [ ! -L "$FILE" ]; then
+                if LC_ALL=C awk -v expected_id="$ID" -v display="$FILE" -v field=artifacts -f "$SCRIPT_DIR/task-format.awk" "$FILE" > "$TMP/artifacts"; then
+                    LC_ALL=C awk -F '\t' '{print $3}' "$TMP/artifacts" >> "$TMP/paths"
+                fi
+            fi
             git log --format='%H%x09%(trailers:key=Task-ID,valueonly,separator=%x2c)' > "$TMP/log"
             LC_ALL=C awk -F '\t' -v id="$ID" -v limit="$LIMIT" '
                 FILENAME == ARGV[1] {paths[$0]=1; next}

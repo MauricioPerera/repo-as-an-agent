@@ -6,6 +6,10 @@ Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
 ### Añadido
 
+- Piloto ADD opcional por tarea: referencia acordada y evidencias de entrega por criterio, con archivos vinculados a puntos de guardado inmutables mediante `agree` y `deliver`. Mantiene los cuatro estados y las tareas anteriores, sin dependencias adicionales.
+- Validación de artefactos históricos regulares no vacíos y de la relación entre los puntos de referencia y entrega, también al guardar archivos preparados o editados manualmente. Cambiar el acuerdo retira las verificaciones anteriores; retirar un criterio retira su entrega.
+- Historial ampliado con los puntos de los artefactos actuales, guía del piloto y regresiones para cierre, reaperturas, restauraciones y borradores paralelos.
+
 - Cabecera de la landing con la última release estable y su enlace generados durante la publicación de Pages; se actualiza al publicar una release y usa las versiones del repositorio actual. Las copias sin releases muestran «Ver versiones».
 - Pruebas con Playwright en escritorio y móvil emulado para los cuatro estados, evidencia y resultado de cierre, navegación por teclado y todos los botones de copia, incluido `prompt.md` y los casos de copia denegada.
 - Regresiones de la versión automática para repositorios nuevos, etiquetas escapadas y fallos de la API. Un fallo de consulta detiene el despliegue y conserva la publicación anterior.

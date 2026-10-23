@@ -49,6 +49,17 @@ El asistente debe registrar qué comprobó antes de darla por terminada. Guardar
 un avance conserva una versión y lo relaciona con la tarea; puedes guardar
 varios avances durante el mismo trabajo.
 
+### Para acordar un resultado y revisar su entrega
+
+Puedes pedir: *"Usa el piloto ADD: toma este esquema como referencia y, al
+entregar, muéstrame las pruebas de que se cumplió"*. El asistente guarda la
+referencia acordada y relaciona las evidencias con la tarea y sus puntos de
+guardado. Conservas los mismos cuatro estados. Si cambia el acuerdo, hay que
+comprobar de nuevo sus criterios antes de terminar.
+
+Consulta la [guía del piloto ADD](docs/piloto-add.md). El agente debe comprobar
+las evidencias: que exista un informe no demuestra por sí solo que sea correcto.
+
 ## Carpetas que mantiene tu asistente (no necesitas tocarlas)
 
 * **`knowledge/`**: Es la memoria ordenada de tu asistente (escrita en archivos legibles por si algún día quieres consultarlos).

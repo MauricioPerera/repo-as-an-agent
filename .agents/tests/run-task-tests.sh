@@ -163,4 +163,5 @@ checkpoint 'Retirar una tarea del listado actual' >/dev/null
 REMOVED_REF=$(git rev-parse --short HEAD)
 tasks history "$ID2" | grep -q "PUNTO=$REMOVED_REF" || die 'Historial de tarea eliminada'
 ok 'El historial sigue disponible después de retirar el archivo de tarea'
+. "$SOURCE/.agents/tests/task-add-cases.sh"
 printf 'RESUMEN DE TAREAS: PASS=%s | FAIL=0\nTASK_TEST_VERDICT=PASS\n' "$PASS"

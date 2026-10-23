@@ -85,4 +85,4 @@ No asumas los detalles de los flujos complejos. **Lee el `SKILL.md` correspondie
 4. **Asistente documental y de datos (`workspace-assistant`):** [`.agents/skills/workspace-assistant/SKILL.md`](./.agents/skills/workspace-assistant/SKILL.md)
    - Cuándo usar: Procesar elementos sueltos de `workspace/bandeja/`, realizar ediciones masivas auditadas en `workspace/documentos/`, limpiar/auditar CSVs en `workspace/datos/` o generar salidas en `workspace/entregables/`.
 5. **Gestor de tareas (`task-manager`):** [`.agents/skills/task-manager/SKILL.md`](./.agents/skills/task-manager/SKILL.md)
-   - Cuándo usar: Organizar pendientes del proyecto, retomar trabajo, registrar bloqueos, verificar criterios de aceptación y relacionar avances con puntos de guardado. No confundir con chats ni recordatorios programados.
+   - Cuándo usar: Organizar pendientes del proyecto, retomar trabajo, registrar bloqueos, verificar criterios de aceptación y relacionar avances con puntos de guardado. Incluye el piloto ADD con referencia acordada y evidencias de entrega. No confundir con chats ni recordatorios programados.

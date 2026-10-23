@@ -6,9 +6,10 @@ ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
 cd "$ROOT"
 TASK_DIR=workspace/documentos/tareas
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/agty-tasks-lint.XXXXXX")
-trap 'rm -f "$TMP/list" "$TMP/blob"; rmdir "$TMP"' EXIT
+trap 'rm -f "$TMP/list" "$TMP/blob" "$TMP/artifacts"; rmdir "$TMP"' EXIT
 trap 'exit 1' HUP INT TERM
 fail() { printf 'TASK_LINT_STATUS=FAIL\nERROR=%s\n' "$1"; exit 1; }
+. "$SCRIPT_DIR/task-artifacts.sh"
 MODE=${1:-}
 [ "$#" -le 1 ] || fail "Uso: tasks-lint.sh [--staged]"
 case "$MODE" in ''|--staged) ;; *) fail "Opción desconocida: $MODE" ;; esac
@@ -51,6 +52,7 @@ while IFS= read -r FILE || [ -n "$FILE" ]; do
     if ! LC_ALL=C awk -v expected_id="$ID" -v display="$FILE" -f "$SCRIPT_DIR/task-format.awk" "$SOURCE"; then
         fail "Revisa el formato de $FILE"
     fi
+    add_validate "$SOURCE"
     COUNT=$((COUNT + 1))
 done < "$TMP/list"
 printf 'TASK_LINT_STATUS=PASS\nTASK_COUNT=%s\n' "$COUNT"

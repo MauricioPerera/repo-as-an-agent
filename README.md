@@ -29,7 +29,7 @@ Para publicar esta landing en tu propia copia, entrega a tu agente el [prompt de
    - **Cero dependencias adicionales:** solo requiere tener **Git** instalado (compatible con *Git for Windows*, macOS, Linux y *Git Worktrees*).
    - `okf-lint.sh`: valida el perfil YAML de la memoria y sus enlaces (incluyendo espacios y paréntesis). Al guardar, revisa los archivos exactos preparados y sus destinos, aunque difieran de los archivos locales.
    - `git-ops.sh`: gestiona puntos de guardado, borradores paralelos, conciliaciones y reversiones sin pérdida de datos (`undo-safe` genera etiquetas inmutables `rescate/*` antes de restaurar cualquier versión).
-   - `tasks.sh`: gestiona tareas Markdown con cuatro estados, criterios verificados con evidencia e historial vinculado a puntos de guardado; `tasks-lint.sh` valida su formato y las reglas de cierre.
+   - `tasks.sh`: gestiona tareas Markdown con cuatro estados, criterios verificados con evidencia e historial vinculado a puntos de guardado; incluye un piloto ADD con referencia acordada y entregas comprobables. `tasks-lint.sh` valida su formato y las reglas de cierre.
    - Hooks `pre-commit` y `pre-merge-commit`: bloquean automáticamente secretos (`.env`, llaves privadas), archivos >50 MB, marcadores de conflicto y nodos OKF inválidos.
 4. **Skills modulares (`.agents/skills/`):**
    - `onboarding`: entrevista breve de bienvenida para personalizar el espacio en la primera sesión.
@@ -99,6 +99,27 @@ controles de guardado revisan los archivos preparados y bloquean cierres incompl
 Las tareas participan en las restauraciones con respaldo del espacio y en los
 borradores paralelos. Permanecen fuera del artefacto público de GitHub Pages.
 
+### Piloto ADD: referencia acordada y evidencias de entrega
+
+El [piloto de desarrollo guiado por artefactos](docs/piloto-add.md) permite acordar
+un ejemplo, esquema o documento antes de trabajar y contrastar la entrega con
+evidencia por criterio. Se activa por tarea; conserva los cuatro estados y usa
+únicamente Git y herramientas POSIX.
+
+```sh
+# Ambos archivos deben existir en el punto de guardado indicado.
+sh .agents/scripts/tasks.sh agree T-123456789abc workspace/documentos/referencia.md HEAD "Esquema solicitado por el usuario"
+sh .agents/scripts/tasks.sh deliver T-123456789abc 1 workspace/entregables/informe.md HEAD "Resultado contrastado con la referencia"
+```
+
+Los comandos conservan el archivo y su punto exacto en `## Referencia acordada`
+y `## Evidencias de entrega`. `deliver` verifica su criterio; cambiar el acuerdo
+retira las verificaciones y entregas anteriores. El cierre exige una entrega por
+criterio y un resultado escrito. Las tareas normales mantienen `verify`.
+Los controles comprueban que los archivos históricos existan, sean regulares y
+no estén vacíos; la veracidad de la evidencia sigue requiriendo comprobación.
+Consulta la guía para el flujo completo de guardado, revisión y reapertura.
+
 ## Validación automatizada
 
 Para ejecutar la suite de pruebas deterministas en un entorno temporal aislado:
@@ -112,6 +133,8 @@ Incluye regresiones para archivos ignorados que colisionan con una restauración
 memoria y enlaces preparados distintos de la copia local, y encabezados YAML mal formados.
 La suite adicional del gestor cubre el ciclo de tareas, evidencia, asociaciones,
 contenido preparado, restauraciones y borradores paralelos, también en un entorno aislado.
+Incluye las regresiones ADD de `.agents/tests/task-add-cases.sh`: acuerdos,
+evidencias históricas, cierre, cambios de alcance y vínculos a puntos de guardado.
 
 El flujo [Pruebas de GitHub Actions](.github/workflows/tests.yml) ejecuta esta misma
 suite en Linux, macOS y Windows con cada actualización del repositorio y cada

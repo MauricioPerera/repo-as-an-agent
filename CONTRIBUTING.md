@@ -69,6 +69,14 @@ con `sh .agents/scripts/tasks-lint.sh` como los archivos preparados con
 `sh .agents/scripts/tasks-lint.sh --staged`. Conserva la comprobación de evidencia,
 los respaldos de restauración y la compatibilidad con borradores paralelos.
 
+El piloto ADD se cubre en `.agents/tests/task-add-cases.sh`, incluido por la misma
+suite del gestor. Conserva las tareas antiguas y los cuatro estados. Prueba
+referencias y entregas guardadas, rutas y puntos inválidos, archivos históricos
+regulares, ediciones manuales, la versión preparada frente a la local, reaperturas,
+restauraciones y worktrees. Los casos usan archivos ficticios dentro de la copia
+temporal; no crees tareas de prueba en el template ni dependencias de Node/Python
+para el gestor. El flujo de uso está en [la guía ADD](docs/piloto-add.md).
+
 ## Trabajar en la landing
 
 El sitio está en `site/` y sus instrucciones de despliegue en [prompt.md](prompt.md).
