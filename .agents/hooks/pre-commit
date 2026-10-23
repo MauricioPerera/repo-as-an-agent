@@ -54,9 +54,10 @@ while IFS= read -r STAGED_FILE || [ -n "$STAGED_FILE" ]; do
     fi
 done < "$TMP_STAGED"
 
-# 4. Validar integridad de la memoria OKF si existe knowledge/
-if [ -d "$REPO_ROOT/knowledge" ]; then
-    if ! OKF_OUT=$(sh "$REPO_ROOT/.agents/scripts/okf-lint.sh" "$REPO_ROOT/knowledge" 2>&1); then
+# 4. Validar el contenido exacto preparado, incluyendo destinos de enlaces y
+# eliminaciones. Una corrección que solo exista en disco no debe ocultar errores.
+if [ -d "$REPO_ROOT/knowledge" ] || [ -n "$(git ls-files -- knowledge)" ] || git cat-file -e HEAD:knowledge 2>/dev/null; then
+    if ! OKF_OUT=$(sh "$REPO_ROOT/.agents/scripts/okf-lint.sh" --staged 2>&1); then
         echo "PRE_COMMIT_FAIL: La memoria en knowledge/ no cumple el estándar OKF:"
         echo "$OKF_OUT"
         BLOCK_ERRORS=$((BLOCK_ERRORS + 1))

@@ -21,10 +21,12 @@ MAX_BYTES=52428800 # 50 MB
 
 TMP_STATUS="${TMPDIR:-/tmp}/agty_wt_$$.txt"
 TMP_MARKERS="${TMPDIR:-/tmp}/agty_markers_$$.txt"
+TMP_IGNORED="${TMPDIR:-/tmp}/agty_ignored_$$.txt"
+TMP_RESTORE_PATHS="${TMPDIR:-/tmp}/agty_restore_paths_$$.txt"
 TMP_IDX=""
 
 cleanup_git_ops() {
-    rm -f "$TMP_STATUS" "$TMP_MARKERS" 2>/dev/null || true
+    rm -f "$TMP_STATUS" "$TMP_MARKERS" "$TMP_IGNORED" "$TMP_RESTORE_PATHS" 2>/dev/null || true
     if [ -n "$TMP_IDX" ]; then
         rm -f "$TMP_IDX" 2>/dev/null || true
     fi
@@ -114,6 +116,38 @@ check_working_sizes() {
         return 1
     fi
     return 0
+}
+
+check_ignored_restore_paths() {
+    # Los archivos ignorados pueden contener secretos: no forzarlos al respaldo.
+    # Bloquear antes de modificar nada si una restauración pudiera sobrescribirlos,
+    # incluso cuando un archivo sustituya a una carpeta (o viceversa).
+    git ls-files --others --ignored --exclude-standard > "$TMP_IGNORED"
+    git ls-tree -r --name-only HEAD > "$TMP_RESTORE_PATHS"
+    git ls-tree -r --name-only "$1" -- workspace knowledge >> "$TMP_RESTORE_PATHS"
+    IGNORE_CASE=$(git config --bool core.ignorecase || echo false)
+    COLLISIONS=$(awk -v fold_case="$IGNORE_CASE" '
+        FILENAME == ARGV[1] {
+            path = fold_case == "true" ? tolower($0) : $0
+            targets[path] = 1
+            next
+        }
+        {
+            path = fold_case == "true" ? tolower($0) : $0
+            for (target in targets) {
+                if (path == target || index(path, target "/") == 1 || index(target, path "/") == 1) {
+                    print $0
+                    break
+                }
+            }
+        }
+    ' "$TMP_RESTORE_PATHS" "$TMP_IGNORED")
+    if [ -n "$COLLISIONS" ]; then
+        echo "UNDO_STATUS=BLOCKED_IGNORED_FILES"
+        echo "ERROR=La restauración podría sobrescribir archivos locales excluidos del respaldo. Muévelos fuera del repositorio antes de volver a intentar."
+        printf '%s\n' "$COLLISIONS"
+        return 1
+    fi
 }
 
 create_rescue_snapshot() {
@@ -397,6 +431,7 @@ case "$SUBCMD" in
             exit 1
         fi
         if has_conflicts; then
+            check_ignored_restore_paths HEAD || exit 1
             RESCUE_TAG=$(create_rescue_snapshot "Respaldo antes de cancelar conflicto")
             git merge --abort 2>/dev/null || true
             echo "UNDO_STATUS=CONFLICT_ABORTED"
@@ -418,7 +453,27 @@ case "$SUBCMD" in
             fi
         fi
 
-        # 1. SIEMPRE crear etiqueta inmutable de rescate antes de tocar cualquier archivo
+        TARGET_REF="$MODE"
+        if [ "$MODE" = "working" ]; then
+            TARGET_REF="HEAD"
+        elif [ "$MODE" = "last" ]; then
+            if ! git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+                echo "UNDO_STATUS=FAIL"
+                echo "ERROR=Solo existe un punto de guardado en el historial; no hay una versión anterior a la cual retroceder."
+                exit 1
+            fi
+            TARGET_REF="HEAD~1"
+        fi
+
+        if ! TARGET_REF=$(git rev-parse --verify "${TARGET_REF}^{commit}" 2>/dev/null); then
+            echo "UNDO_STATUS=FAIL"
+            echo "ERROR=La referencia '$MODE' no existe en el historial."
+            exit 1
+        fi
+
+        check_ignored_restore_paths "$TARGET_REF" || exit 1
+
+        # Crear el respaldo solo después de verificar que la operación es segura.
         RESCUE_TAG=$(create_rescue_snapshot "Respaldo automatico antes de undo-safe ($MODE)")
 
         if [ "$MODE" = "working" ]; then
@@ -429,24 +484,6 @@ case "$SUBCMD" in
             echo "RESTORED_TO=$(git rev-parse --short HEAD)"
             echo "RESCUE_TAG=$RESCUE_TAG"
             exit 0
-        fi
-
-        TARGET_REF="$MODE"
-        if [ "$MODE" = "last" ]; then
-            if ! git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
-                echo "UNDO_STATUS=FAIL"
-                echo "RESCUE_TAG=$RESCUE_TAG"
-                echo "ERROR=Solo existe un punto de guardado en el historial; no hay una versión anterior a la cual retroceder."
-                exit 1
-            fi
-            TARGET_REF="HEAD~1"
-        fi
-
-        if ! git rev-parse --verify "${TARGET_REF}^{commit}" >/dev/null 2>&1; then
-            echo "UNDO_STATUS=FAIL"
-            echo "RESCUE_TAG=$RESCUE_TAG"
-            echo "ERROR=La referencia '$TARGET_REF' no existe en el historial."
-            exit 1
         fi
 
         SHORT_TARGET=$(git rev-parse --short "${TARGET_REF}^{commit}")

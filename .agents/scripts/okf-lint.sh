@@ -13,6 +13,44 @@ set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
+STAGED_ROOT=""
+STAGED_TREE=""
+TMP_BASE=$(CDPATH= cd -- "${TMPDIR:-/tmp}" && pwd)
+TMP_FILES="$TMP_BASE/okf_files_$$.txt"
+TMP_LINKS="$TMP_BASE/okf_links_$$.txt"
+cleanup_okf() {
+    rm -f "$TMP_FILES" "$TMP_LINKS"
+    if [ -n "$STAGED_ROOT" ]; then
+        case "$STAGED_ROOT" in
+            "$TMP_BASE"/okf-index.*) rm -rf "$STAGED_ROOT" ;;
+        esac
+    fi
+}
+trap cleanup_okf EXIT INT TERM
+
+# Leer los blobs exactos del índice, sin conversiones de finales de línea ni
+# filtros de checkout. Los destinos de enlaces se consultan en el mismo árbol.
+if [ "${1:-}" = "--staged" ]; then
+    STAGED_TREE=$(git -C "$REPO_ROOT" write-tree)
+    STAGED_ROOT=$(mktemp -d "$TMP_BASE/okf-index.XXXXXX")
+    mkdir -p "$STAGED_ROOT/knowledge"
+    git -C "$REPO_ROOT" -c core.quotepath=false ls-tree -r --name-only "$STAGED_TREE" -- knowledge > "$TMP_FILES"
+    while IFS= read -r STAGED_FILE || [ -n "$STAGED_FILE" ]; do
+        case "$STAGED_FILE" in
+            knowledge/*.md)
+                mkdir -p "$STAGED_ROOT/$(dirname -- "$STAGED_FILE")"
+                git -C "$REPO_ROOT" cat-file blob "$STAGED_TREE:$STAGED_FILE" > "$STAGED_ROOT/$STAGED_FILE"
+                ;;
+            knowledge/*) ;;
+            *)
+                echo "OKF_LINT_STATUS=FAIL"
+                echo "ERROR=Nombre de archivo no admitido en knowledge/: $STAGED_FILE"
+                exit 1
+                ;;
+        esac
+    done < "$TMP_FILES"
+    set -- "$STAGED_ROOT/knowledge"
+fi
 RAW_KNOWLEDGE_DIR="${1:-$REPO_ROOT/knowledge}"
 
 if [ ! -d "$RAW_KNOWLEDGE_DIR" ]; then
@@ -42,10 +80,6 @@ if [ ! -f "$KNOWLEDGE_DIR/log.md" ]; then
     report_error "Falta archivo estructural obligatorio: knowledge/log.md"
 fi
 
-TMP_FILES="${TMPDIR:-/tmp}/okf_files_$$.txt"
-TMP_LINKS="${TMPDIR:-/tmp}/okf_links_$$.txt"
-trap 'rm -f "$TMP_FILES" "$TMP_LINKS"' EXIT INT TERM
-
 find "$KNOWLEDGE_DIR" -type f -name "*.md" | sort > "$TMP_FILES"
 
 while IFS= read -r FILE || [ -n "$FILE" ]; do
@@ -58,106 +92,14 @@ while IFS= read -r FILE || [ -n "$FILE" ]; do
         report_error "$REL_FILE contiene saltos de línea CRLF (\\r); debe usar LF."
     fi
 
+    STRUCTURAL=0
     if [ "$BASENAME" = "index.md" ] || [ "$BASENAME" = "log.md" ]; then
-        # Regla OKF: index.md y log.md están reservados para estructura, no para conceptos core
-        HAS_CONCEPT_TYPE=$(awk '
-            NR==1 && /^---[[:space:]]*$/ { in_fm=1; next }
-            in_fm && /^---[[:space:]]*$/ { exit }
-            in_fm && /^type:[[:space:]]*[^[:space:]]+/ { print "yes"; exit }
-        ' "$FILE")
-        if [ "$HAS_CONCEPT_TYPE" = "yes" ]; then
-            report_error "$REL_FILE es un archivo estructural reservado en OKF y NO debe definir 'type:' de concepto."
-        fi
+        STRUCTURAL=1
     else
         CONCEPTS_CHECKED=$((CONCEPTS_CHECKED + 1))
-
-        # Auditar Frontmatter YAML y cuerpo del Concept Document
-        FM_CHECK=$(awk '
-            BEGIN {
-                in_fm = 0
-                closed_fm = 0
-                has_type = 0
-                has_title = 0
-                has_desc = 0
-                body_lines = 0
-            }
-            NR == 1 {
-                if ($0 ~ /^---[[:space:]]*$/) {
-                    in_fm = 1
-                    next
-                } else {
-                    print "MISSING_OPEN_DELIM"
-                    exit
-                }
-            }
-            in_fm == 1 {
-                if ($0 ~ /^---[[:space:]]*$/) {
-                    in_fm = 0
-                    closed_fm = 1
-                    next
-                }
-                if ($0 ~ /^type:[[:space:]]*/) {
-                    val = $0
-                    sub(/^type:[[:space:]]*/, "", val)
-                    gsub(/["'\''[:space:]]/, "", val)
-                    if (length(val) > 0) has_type = 1
-                }
-                if ($0 ~ /^title:[[:space:]]*/) {
-                    val = $0
-                    sub(/^title:[[:space:]]*/, "", val)
-                    gsub(/["'\''[:space:]]/, "", val)
-                    if (length(val) > 0) has_title = 1
-                }
-                if ($0 ~ /^description:[[:space:]]*/) {
-                    val = $0
-                    sub(/^description:[[:space:]]*/, "", val)
-                    gsub(/["'\''[:space:]]/, "", val)
-                    if (length(val) > 0) has_desc = 1
-                }
-                next
-            }
-            closed_fm == 1 {
-                if ($0 ~ /[^[:space:]]/) body_lines++
-            }
-            END {
-                if (NR == 0) {
-                    print "EMPTY_FILE"
-                } else if (!closed_fm) {
-                    print "UNCLOSED_FRONTMATTER"
-                } else {
-                    if (!has_type) print "MISSING_TYPE"
-                    if (!has_title) print "MISSING_TITLE"
-                    if (!has_desc) print "MISSING_DESCRIPTION"
-                    if (body_lines == 0) print "EMPTY_BODY"
-                }
-            }
-        ' "$FILE")
-
-        for ISSUE in $FM_CHECK; do
-            case "$ISSUE" in
-                EMPTY_FILE)
-                    report_error "$REL_FILE está vacío."
-                    ;;
-                MISSING_OPEN_DELIM)
-                    report_error "$REL_FILE debe iniciar en la línea 1 con YAML frontmatter ('---')."
-                    ;;
-                UNCLOSED_FRONTMATTER)
-                    report_error "$REL_FILE no cierra su bloque YAML frontmatter con '---'."
-                    ;;
-                MISSING_TYPE)
-                    report_error "$REL_FILE no incluye el campo obligatorio OKF 'type:' con valor."
-                    ;;
-                MISSING_TITLE)
-                    report_error "$REL_FILE no incluye el campo 'title:' con valor."
-                    ;;
-                MISSING_DESCRIPTION)
-                    report_error "$REL_FILE no incluye el campo 'description:' con valor."
-                    ;;
-                EMPTY_BODY)
-                    report_error "$REL_FILE no tiene contenido Markdown después del frontmatter."
-                    ;;
-            esac
-        done
+    fi
+    if ! FM_OUT=$(awk -v structural="$STRUCTURAL" -f "$SCRIPT_DIR/okf-frontmatter.awk" "$FILE"); then
+        report_error "$REL_FILE: $FM_OUT"
     fi
 
     # 3. Extraer enlaces Markdown soportando bloques cercados indentados, <ruta con espacios> y paréntesis balanceados (ej. "Archivo (1).md")
@@ -244,7 +186,32 @@ while IFS= read -r FILE || [ -n "$FILE" ]; do
                 ;;
         esac
 
-        if [ ! -e "$RESOLVED" ]; then
+        LINK_EXISTS=false
+        if [ -n "$STAGED_ROOT" ]; then
+            case "$CLEAN_PATH" in
+                /*) INDEX_PATH="${CLEAN_PATH#/}" ;;
+                *) INDEX_PATH="$(dirname -- "${FILE#"$STAGED_ROOT"/}")/$CLEAN_PATH" ;;
+            esac
+            # Resolver ../ y ./ sin consultar archivos locales ajenos al guardado.
+            if INDEX_PATH=$(printf '%s\n' "$INDEX_PATH" | awk -F/ '
+                {
+                    depth = 0
+                    for (i = 1; i <= NF; i++) {
+                        if ($i == "" || $i == ".") continue
+                        if ($i == "..") {
+                            if (depth == 0) exit 1
+                            depth--
+                        } else parts[++depth] = $i
+                    }
+                    for (i = 1; i <= depth; i++) printf "%s%s", (i > 1 ? "/" : ""), parts[i]
+                }
+            ') && git -C "$REPO_ROOT" cat-file -e "$STAGED_TREE:$INDEX_PATH" 2>/dev/null; then
+                LINK_EXISTS=true
+            fi
+        elif [ -e "$RESOLVED" ]; then
+            LINK_EXISTS=true
+        fi
+        if [ "$LINK_EXISTS" = "false" ]; then
             report_error "$REL_FILE (línea $LINE_NO) tiene un enlace roto hacia '$TARGET'."
         fi
     done < "$TMP_LINKS"

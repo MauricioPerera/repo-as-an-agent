@@ -30,6 +30,7 @@ La carpeta `knowledge/` es la memoria duradera, legible por humanos y versionada
      ---
      ```
    - Debe contener al menos un bloque de contenido Markdown claro después del cierre `---`.
+   - El perfil YAML admite mapas planos, escalares de una línea y listas de escalares en línea. Cierra todas las comillas y listas; no repitas claves. Los mapas anidados, bloques multilínea, etiquetas y alias se rechazan. Los campos obligatorios no pueden ser nulos ni listas.
 4. **Grafo de Enlaces Relativos:**
    - Conecta conceptos relacionados usando enlaces Markdown relativos reales (ej. `[Perfil del Espacio](../profile/context.md)`).
    - **Nunca dejes enlaces rotos:** `okf-lint.sh` verifica físicamente cada ruta enlazada.
@@ -46,3 +47,4 @@ La carpeta `knowledge/` es la memoria duradera, legible por humanos y versionada
    sh .agents/scripts/okf-lint.sh
    ```
    Asegúrate de obtener `OKF_LINT_STATUS=PASS` antes de crear un punto de guardado.
+   El control de guardado valida automáticamente la versión preparada con `okf-lint.sh --staged`, incluyendo los destinos de enlaces; una corrección solo en disco no sustituye la versión preparada.

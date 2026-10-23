@@ -65,6 +65,8 @@ Usa **siempre** `undo-safe`, que crea automáticamente una etiqueta inmutable `r
   ```
 Informa al usuario que sus documentos regresaron a la versión solicitada y que, por seguridad, el estado descartado quedó respaldado por si cambia de opinión.
 
+Si devuelve `UNDO_STATUS=BLOCKED_IGNORED_FILES`, no se modificó ningún archivo ni se creó un rescate. Explica que los archivos locales excluidos indicados deben moverse fuera del repositorio antes de restaurar. No los añadas forzadamente al respaldo: pueden contener secretos. Los archivos excluidos que no colisionan se conservan sin bloquear la operación.
+
 ### 5. Conciliar conflictos sin tecnicismos (`CONFLICT_STATE=true`)
 El usuario jamás debe ver `<<<<<<<` ni `>>>>>>>`:
 1. Ejecuta `sh .agents/scripts/git-ops.sh conflict-check` para listar los archivos afectados.
