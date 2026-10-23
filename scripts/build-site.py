@@ -73,7 +73,7 @@ def render_release(html, repository, release=None):
     slot = (
         '<!-- release:start --><a class="version-pill" id="latest-release" '
         f'href="{escape(url, quote=True)}"><span class="status-dot" aria-hidden="true"></span> '
-        f'AHORA CON TAREAS <span class="pill-version">{escape(label)} ↗</span></a><!-- release:end -->'
+        f'AHORA CON ADD <span class="pill-version">{escape(label)} ↗</span></a><!-- release:end -->'
     )
     if len(RELEASE_SLOT.findall(html)) != 1:
         raise ValueError("La cabecera debe contener un único espacio para la versión automática.")

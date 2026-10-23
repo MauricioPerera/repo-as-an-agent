@@ -28,6 +28,8 @@ class ReleaseTests(unittest.TestCase):
         self.assertNotIn("untrusted.example", html)
         # The introduction version of the task feature is historical content.
         self.assertIn("NUEVO EN v1.1.0", html)
+        self.assertIn("NUEVO EN v1.2.0", html)
+        self.assertIn("AHORA CON ADD", html)
 
     def test_copy_without_releases_links_to_its_own_releases(self):
         html = site.render_release(self.source_html(), "otra-persona/mi-copia")

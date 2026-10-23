@@ -82,6 +82,51 @@ test('las pestañas funcionan con flechas, Inicio y Fin', async ({ page }) => {
   }
 });
 
+test('el piloto ADD conecta referencia, evidencias y sus puntos de guardado', async ({ page, isMobile }) => {
+  await activate(page, page.locator('.hero-feature'), isMobile);
+  await expect(page).toHaveURL(/#add$/);
+  await expect(page.locator('#add-title')).toBeInViewport();
+  await expect(page.locator('#add .eyebrow')).toContainText('v1.2.0');
+  await expect(page.locator('.add-artifact')).toHaveCount(3);
+  await expect(page.locator('#add-reference')).toContainText('workspace/documentos/referencia.md');
+  await expect(page.locator('#add-reference')).toContainText('definidas en el pedido del usuario');
+  await expect(page.locator('#add-delivery .add-evidence')).toHaveCount(2);
+  await expect(page.locator('#add-delivery')).toContainText('Diferencia: 0.');
+  await expect(page.locator('#add-close')).toContainText('2 de 2 criterios verificados');
+  await expect(page.locator('#add-close .add-result')).toContainText('Propuesta revisada y lista para enviar.');
+  await expect(page.locator('.add-rules')).toContainText('retira las verificaciones y entregas anteriores');
+  await expect(page.locator('.add-links a').first()).toHaveAttribute('href', /\/docs\/piloto-add\.md$/);
+  await expect(page.locator('.add-links a').last()).toHaveAttribute('href', /\/releases\/tag\/v1\.2\.0$/);
+  for (const key of ['reference', 'delivery', 'close']) {
+    await activate(page, page.locator(`.add-point[href="#add-save-${key}"]`), isMobile);
+    await expect(page).toHaveURL(new RegExp(`#add-save-${key}$`));
+    await expect(page.locator(`#add-save-${key}`)).toBeInViewport();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  }
+});
+
+for (const kind of ['agreement', 'delivery']) {
+  test(`copia el pedido ADD de ${kind === 'agreement' ? 'referencia' : 'entrega'}`, async ({ page, isMobile }) => {
+    const expected = (await page.locator(`#add-request-${kind}`).textContent()).trim();
+    expect(expected).toContain('punto de guardado');
+    expect(expected.length).toBeGreaterThan(150);
+    await expectCopied(page, page.locator(`[data-copy-target="add-request-${kind}"]`), expected, isMobile);
+  });
+}
+
+test('copia el flujo ADD con archivos guardados antes de acordar y entregar', async ({ page, isMobile }) => {
+  await activate(page, page.locator('.add-technical > summary'), isMobile);
+  const expected = (await page.locator('#add-code').textContent()).trim();
+  expect(expected).toContain('tasks.sh agree T-123456789abc workspace/documentos/referencia.md HEAD');
+  expect(expected).toContain('tasks.sh deliver T-123456789abc 1 workspace/entregables/cifras.md HEAD');
+  expect(expected).toContain('tasks.sh deliver T-123456789abc 2 workspace/entregables/acuerdos.md HEAD');
+  expect(expected.indexOf('Guardar la referencia inicial')).toBeLessThan(expected.indexOf('tasks.sh agree'));
+  expect(expected.indexOf('Guardar la entrega y los informes comprobados')).toBeLessThan(expected.indexOf('tasks.sh deliver'));
+  expect(expected.indexOf('tasks.sh status T-123456789abc terminada')).toBeLessThan(expected.indexOf('Guardar el cierre y sus evidencias'));
+  expect(expected).toContain('tasks.sh history T-123456789abc');
+  await expectCopied(page, page.getByRole('button', { name: 'Copiar ejemplo técnico de ADD', exact: true }), expected, isMobile);
+});
+
 for (const state of states) {
   test(`copia el pedido del estado ${state.label}`, async ({ page, isMobile }) => {
     await activate(page, page.locator(`#task-tab-${state.key}`), isMobile);

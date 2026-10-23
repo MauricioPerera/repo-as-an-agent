@@ -2,6 +2,13 @@
 
 Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
+## Pendiente de publicación
+
+### Añadido
+
+- Sección del piloto ADD de v1.2.0 en la landing, con ejemplos de referencia acordada, evidencias por criterio y cierre, un diagrama de puntos de guardado, pedidos y comandos copiables y enlaces a la guía y a la versión.
+- Comprobaciones de navegación y copia del ejemplo ADD en escritorio y móvil mediante Playwright.
+
 ## [v1.2.0] - 2026-10-23
 
 Piloto opcional de desarrollo guiado por artefactos (ADD): conectar la referencia acordada con las evidencias de entrega mediante puntos de guardado recuperables. Consulta la [guía del piloto](docs/piloto-add.md).
