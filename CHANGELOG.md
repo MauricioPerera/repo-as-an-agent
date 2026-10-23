@@ -2,12 +2,25 @@
 
 Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
-## Pendiente de publicación
+## [v1.2.1] - 2026-10-23
+
+Guía visual del piloto ADD en la landing y acceso directo desde el README.
 
 ### Añadido
 
-- Sección del piloto ADD de v1.2.0 en la landing, con ejemplos de referencia acordada, evidencias por criterio y cierre, un diagrama de puntos de guardado, pedidos y comandos copiables y enlaces a la guía y a la versión.
+- [Sección del piloto ADD de v1.2.0 en la landing](https://mauricioperera.github.io/repo-as-an-agent/#add), con ejemplos de referencia acordada, evidencias por criterio y cierre, un diagrama de puntos de guardado, pedidos y comandos copiables y enlaces a la guía y a la versión.
+- Enlace directo desde la sección del piloto ADD del README a la nueva guía visual.
 - Comprobaciones de navegación y copia del ejemplo ADD en escritorio y móvil mediante Playwright.
+
+### Actualizado
+
+- Cabecera, navegación y acceso principal de la landing para destacar ADD, conservando la versión estable y su enlace generados automáticamente al publicar GitHub Pages.
+
+### Verificación
+
+- **34 pruebas con Playwright**, incluidas **ocho nuevas** para el ejemplo ADD, sus vínculos y los tres botones de copia en escritorio y móvil emulado. La copia se contrasta con el contenido real del portapapeles.
+- **16 pruebas de la landing** y **112 comprobaciones del motor por sistema**: 38 generales y 74 del gestor en Linux, macOS y Windows. El gestor mantiene sus cuatro estados y no añade dependencias.
+- Diseño comprobado entre **320 y 1280 px**, sin desbordamientos horizontales. El enlace del README se verifica desde GitHub y sitúa la página al inicio de la sección ADD.
 
 ## [v1.2.0] - 2026-10-23
 
@@ -111,6 +124,7 @@ Primera versión estable de la plantilla.
 - Distribución bajo la [licencia MIT](LICENSE).
 - Copyright (c) 2026 Mauricio Perera.
 
+[v1.2.1]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.2.1
 [v1.2.0]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.2.0
 [v1.1.1]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.1.1
 [v1.1.0]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.1.0
