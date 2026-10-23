@@ -61,6 +61,28 @@ git diff --check
 
 El [flujo de GitHub Actions](.github/workflows/tests.yml) ejecuta la misma suite en Linux, macOS y Windows con cada actualización y solicitud de cambios. Consulta sus resultados en la pestaña **Actions**; ejecutar las pruebas localmente ayuda a detectar problemas antes de subirlos.
 
+## Trabajar en la landing
+
+El sitio está en `site/` y sus instrucciones de despliegue en [prompt.md](prompt.md).
+Para construirlo necesitas Python 3.9 o posterior, sin paquetes adicionales:
+
+```sh
+python -m unittest discover -s tests -p 'test_*.py'
+python scripts/build-site.py
+python -m http.server 8000 --directory _site --bind 127.0.0.1
+```
+
+Abre `http://127.0.0.1:8000` y comprueba escritorio y móvil, ambas guías,
+los ejemplos, el mapa de carpetas, los botones de copia y el movimiento reducido.
+Puedes verificar la sintaxis con `node --check site/app.js` si tienes Node disponible.
+En algunos sistemas el comando de Python es `python3`.
+
+Las pruebas de la landing están en `tests/test_site.py` y también se ejecutan en
+GitHub Actions. Si agregas recursos públicos, inclúyelos explícitamente en
+`PUBLIC_FILES` de `scripts/build-site.py`. El artefacto `_site/` debe contener solo
+la landing y el prompt; conserva fuera los documentos y la memoria del usuario.
+El flujo de Pages publica desde `main` después de validar y construir el sitio.
+
 ## Guardar y enviar la propuesta
 
 Revisa qué archivos cambiaste y crea un punto de guardado con una nota descriptiva:

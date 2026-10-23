@@ -9,3 +9,10 @@
 *.yml text eol=lf
 *.yaml text eol=lf
 *.json text eol=lf
+
+# Fuentes de la landing y su constructor
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.svg text eol=lf
+*.py text eol=lf

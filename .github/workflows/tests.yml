@@ -27,3 +27,19 @@ jobs:
           persist-credentials: false
       - name: Ejecutar suite determinista
         run: sh .agents/tests/run-tests.sh
+
+  landing:
+    name: Validar la landing
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Verificar JavaScript
+        run: node --check site/app.js
+      - name: Ejecutar pruebas del sitio
+        run: python3 -m unittest discover -s tests -p 'test_*.py'
+      - name: Validar la construcción pública
+        run: python3 scripts/build-site.py

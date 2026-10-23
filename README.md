@@ -10,6 +10,9 @@ Plantilla universal **agnóstica de motor** (*Antigravity, Codex, Claude Code, O
 Consulta las novedades en el [historial de cambios](CHANGELOG.md).
 Para proponer mejoras y ejecutar las pruebas, consulta la [guía para contribuir](CONTRIBUTING.md).
 
+**Guía visual:** [Visita la landing de GitHub Pages](https://mauricioperera.github.io/repo-as-an-agent/), con recorridos para usuarios técnicos y no técnicos, diagramas y ejemplos interactivos.
+Para publicar esta landing en tu propia copia, entrega a tu agente el [prompt de despliegue](prompt.md).
+
 > **¿No eres perfil técnico?** Abre directamente [**LEEME.md**](./LEEME.md) para ver cómo usar este espacio con palabras sencillas.
 
 ---
@@ -55,6 +58,39 @@ memoria y enlaces preparados distintos de la copia local, y encabezados YAML mal
 El flujo [Pruebas de GitHub Actions](.github/workflows/tests.yml) ejecuta esta misma
 suite en Linux, macOS y Windows con cada actualización del repositorio y cada
 solicitud de cambios. También puede iniciarse manualmente desde la pestaña Actions.
+La landing tiene además pruebas de enlaces, rutas portables y límites de publicación
+en `tests/test_site.py`, ejecutadas por el mismo flujo.
+
+## Landing y GitHub Pages
+
+La [landing pública](https://mauricioperera.github.io/repo-as-an-agent/) explica el
+template en español con dos recorridos de inicio, diagramas, ejemplos interactivos
+y animaciones con opción de pausa y soporte de movimiento reducido.
+Su código está en `site/`: HTML, CSS y JavaScript sin dependencias externas.
+
+Para construirla y previsualizarla necesitas Python 3.9 o posterior:
+
+```sh
+python -m unittest discover -s tests -p 'test_*.py'
+python scripts/build-site.py
+python -m http.server 8000 --directory _site --bind 127.0.0.1
+```
+
+Abre `http://127.0.0.1:8000`. En algunos entornos el comando se llama `python3`.
+Si tienes Node disponible, `node --check site/app.js` comprueba la sintaxis del script.
+El constructor genera `_site/` con una lista explícita de archivos públicos; no
+incluye `workspace/` ni `knowledge/`. `prompt.md` se copia desde la raíz durante la
+construcción, para mantener una sola fuente de las instrucciones de despliegue.
+
+El flujo [Publicar landing](.github/workflows/pages.yml) comprueba y publica el sitio
+cuando cambian sus archivos en `main`, y también admite ejecución manual. En tu
+copia activa **Settings → Pages → Build and deployment → Source → GitHub Actions**.
+Si usas otra rama predeterminada, ajusta el filtro del flujo. Pages en repositorios
+privados depende del plan de GitHub; activar Pages no requiere hacer público el repo.
+El artefacto público es únicamente `_site/`.
+
+Para delegar todo el proceso, copia el contenido de [prompt.md](prompt.md) a tu agente.
+Incluye construcción, configuración, publicación y verificación del sitio resultante.
 
 ## Formato de memoria admitido
 

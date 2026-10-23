@@ -20,3 +20,5 @@ id_ed25519
 
 # Directorios temporales de pruebas
 .tmp-test/
+_site/
+__pycache__/

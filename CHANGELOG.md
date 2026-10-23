@@ -2,6 +2,15 @@
 
 Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
+## Pendiente de publicación
+
+### Añadido
+
+- Landing en GitHub Pages con guías para usuarios técnicos y no técnicos, diagramas, ejemplos interactivos, navegación por teclado y animaciones con pausa y movimiento reducido.
+- [Prompt de despliegue](prompt.md) listo para copiar a un agente y publicar la landing en una copia del template.
+- Constructor con una lista explícita de archivos públicos y siete pruebas para enlaces, rutas de proyecto y exclusión de documentos privados.
+- Flujo de publicación automática de Pages y validación de la landing en el flujo de pruebas existente.
+
 ## [v1.0.0] - 2026-10-23
 
 Primera versión estable de la plantilla.
