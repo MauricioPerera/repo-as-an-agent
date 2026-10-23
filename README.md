@@ -49,6 +49,9 @@ Para publicar esta landing en tu propia copia, entrega a tu agente el [prompt de
 
 ## Tareas vinculadas a puntos de guardado
 
+Consulta la [guía visual del gestor de tareas de v1.1.0](https://mauricioperera.github.io/repo-as-an-agent/#tareas)
+para explorar sus estados, la evidencia de cierre y los puntos de guardado.
+
 Pídele al agente: *"Añade una tarea para revisar la propuesta"*, *"¿Qué queda
 pendiente?"* o *"Retoma la tarea que estaba en curso"*. Las tareas son archivos
 legibles en `workspace/documentos/tareas/`. El gestor usa Git, `sh`, `awk` y las
