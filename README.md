@@ -44,6 +44,10 @@ sh .agents/tests/run-tests.sh
 Incluye regresiones para archivos ignorados que colisionan con una restauración,
 memoria y enlaces preparados distintos de la copia local, y encabezados YAML mal formados.
 
+El flujo [Pruebas de GitHub Actions](.github/workflows/tests.yml) ejecuta esta misma
+suite en Linux, macOS y Windows con cada actualización del repositorio y cada
+solicitud de cambios. También puede iniciarse manualmente desde la pestaña Actions.
+
 ## Formato de memoria admitido
 
 Para mantener la instalación sin dependencias adicionales, los encabezados usan un
