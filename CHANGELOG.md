@@ -2,7 +2,9 @@
 
 Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
-## Pendiente de publicación
+## [v1.2.0] - 2026-10-23
+
+Piloto opcional de desarrollo guiado por artefactos (ADD): conectar la referencia acordada con las evidencias de entrega mediante puntos de guardado recuperables. Consulta la [guía del piloto](docs/piloto-add.md).
 
 ### Añadido
 
@@ -10,10 +12,20 @@ Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 - Validación de artefactos históricos regulares no vacíos y de la relación entre los puntos de referencia y entrega, también al guardar archivos preparados o editados manualmente. Cambiar el acuerdo retira las verificaciones anteriores; retirar un criterio retira su entrega.
 - Historial ampliado con los puntos de los artefactos actuales, guía del piloto y regresiones para cierre, reaperturas, restauraciones y borradores paralelos.
 
+### Actualizado
+
 - Cabecera de la landing con la última release estable y su enlace generados durante la publicación de Pages; se actualiza al publicar una release y usa las versiones del repositorio actual. Las copias sin releases muestran «Ver versiones».
 - Pruebas con Playwright en escritorio y móvil emulado para los cuatro estados, evidencia y resultado de cierre, navegación por teclado y todos los botones de copia, incluido `prompt.md` y los casos de copia denegada.
 - Regresiones de la versión automática para repositorios nuevos, etiquetas escapadas y fallos de la API. Un fallo de consulta detiene el despliegue y conserva la publicación anterior.
 - Entorno de pruebas del navegador aislado en `tests/browser/`, con dependencias fijadas y ejecución en GitHub Actions. El gestor mantiene sus requisitos de Git y herramientas POSIX, sin paquetes adicionales.
+
+### Pruebas
+
+- **74 pruebas del gestor**, incluidas **40 nuevas para ADD**: referencias y evidencias válidas, rechazo de archivos o puntos inexistentes, cierre por criterio, cambios de acuerdo, historial y recuperación.
+- **112 comprobaciones del motor** por sistema: 38 generales y 74 del gestor, ejecutadas en Linux, macOS y Windows.
+- **16 pruebas de la landing** y **26 pruebas con Playwright** en escritorio y móvil emulado.
+
+La validación comprueba los archivos guardados y sus vínculos históricos. La conformidad del contenido con lo acordado requiere la revisión del agente o de la persona responsable.
 
 ## [v1.1.1] - 2026-10-23
 
@@ -92,6 +104,7 @@ Primera versión estable de la plantilla.
 - Distribución bajo la [licencia MIT](LICENSE).
 - Copyright (c) 2026 Mauricio Perera.
 
+[v1.2.0]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.2.0
 [v1.1.1]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.1.1
 [v1.1.0]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.1.0
 [v1.0.0]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.0.0
