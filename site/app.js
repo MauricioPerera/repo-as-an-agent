@@ -141,6 +141,14 @@
     });
   });
 
+  const taskButtons = [...document.querySelectorAll("[data-task-state]")];
+  enableTabs(taskButtons, (active) => {
+    selectTab(taskButtons, active);
+    taskButtons.forEach((button) => {
+      byId(button.getAttribute("aria-controls")).hidden = button !== active;
+    });
+  });
+
   const narrowScreen = window.matchMedia("(max-width: 680px)");
   const updateTabOrientation = () => {
     document.querySelector(".demo-tabs").setAttribute("aria-orientation", narrowScreen.matches ? "horizontal" : "vertical");
