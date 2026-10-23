@@ -101,6 +101,9 @@ borradores paralelos. Permanecen fuera del artefacto público de GitHub Pages.
 
 ### Piloto ADD: referencia acordada y evidencias de entrega
 
+Consulta la [guía visual del piloto ADD de v1.2.0](https://mauricioperera.github.io/repo-as-an-agent/#add)
+para ver ejemplos de referencia acordada, evidencias de entrega y puntos de guardado.
+
 El [piloto de desarrollo guiado por artefactos](docs/piloto-add.md) permite acordar
 un ejemplo, esquema o documento antes de trabajar y contrastar la entrega con
 evidencia por criterio. Se activa por tarea; conserva los cuatro estados y usa
