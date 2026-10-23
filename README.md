@@ -2,8 +2,11 @@
 
 [![Pruebas](https://github.com/MauricioPerera/repo-as-an-agent/actions/workflows/tests.yml/badge.svg?branch=main&event=push)](https://github.com/MauricioPerera/repo-as-an-agent/actions/workflows/tests.yml)
 [![Licencia MIT](https://img.shields.io/badge/Licencia-MIT-blue.svg)](LICENSE)
+[![Última versión](https://img.shields.io/github/v/release/MauricioPerera/repo-as-an-agent?label=Versi%C3%B3n)](https://github.com/MauricioPerera/repo-as-an-agent/releases/latest)
 
 Plantilla universal **agnóstica de motor** (*Antigravity, Codex, Claude Code, OpenCode, Cursor*) que convierte un repositorio Git en un asistente documental y de memoria seguro para **personas no técnicas**.
+
+**Primera versión estable:** [v1.0.0](https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.0.0).
 
 > **¿No eres perfil técnico?** Abre directamente [**LEEME.md**](./LEEME.md) para ver cómo usar este espacio con palabras sencillas.
 
