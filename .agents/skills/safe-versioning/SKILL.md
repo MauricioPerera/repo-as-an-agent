@@ -19,6 +19,9 @@ Opera Git de forma 100% determinista a través de [git-ops.sh](../../scripts/git
    sh .agents/scripts/git-ops.sh checkpoint "<Resumen claro de lo realizado>"
    ```
 2. Si devuelve `CHECKPOINT_STATUS=SAVED`, confirma brevemente qué quedó guardado.
+   Si el avance pertenece a una tarea registrada, añade `--task ID` al comando;
+   puedes repetirlo para asociar varias tareas. Consulta `task-manager` para los
+   estados y la evidencia: guardar avances no termina tareas automáticamente.
 3. Si devuelve `CHECKPOINT_STATUS=BLOCKED`, lee el diagnóstico del hook `pre-commit` (ej. un error en `knowledge/` o un archivo >50 MB), corrígelo o explícalo en palabras simples y vuelve a intentar. **Jamás uses `--no-verify`.**
 
 ### 2. Crear o cambiar entre borradores paralelos ("Probemos otra versión sin tocar la actual")

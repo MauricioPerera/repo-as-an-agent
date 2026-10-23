@@ -22,3 +22,4 @@ id_ed25519
 .tmp-test/
 _site/
 __pycache__/
+/workspace/documentos/tareas/.task-*

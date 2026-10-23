@@ -2,7 +2,7 @@
 # git-ops.sh — Operaciones seguras y deterministas de Git para flujos no técnicos.
 # Compatible con POSIX sh (Git for Windows, macOS, Linux) y Git Worktrees.
 # Subcomandos disponibles:
-#   checkpoint "<mensaje>"       -> Crea un punto de guardado validado (o cierra una conciliación limpia)
+#   checkpoint "<mensaje>" [--task ID ...] -> Guarda cambios y los vincula opcionalmente a tareas
 #   draft-create "<nombre>"      -> Crea y activa un borrador paralelo (borrador/<slug>)
 #   draft-list                   -> Lista el borrador activo, otros borradores y etiquetas de rescate
 #   draft-switch "<nombre|main>" -> Cambia de borrador guardando cambios pendientes primero
@@ -188,6 +188,32 @@ case "$SUBCMD" in
             echo "ERROR=Debes proporcionar una nota descriptiva para el punto de guardado."
             exit 1
         fi
+
+        # Validar asociaciones antes de preparar archivos. Los estados permanecen
+        # en Markdown; los metadatos del mensaje solo relacionan el trabajo.
+        shift
+        TASK_IDS=
+        while [ "$#" -gt 0 ]; do
+            if [ "$1" != --task ] || [ "$#" -lt 2 ]; then
+                echo "CHECKPOINT_STATUS=FAIL"
+                echo "ERROR=Uso: checkpoint nota [--task ID ...]"
+                exit 1
+            fi
+            TASK_ID=$2
+            if ! sh "$SCRIPT_DIR/tasks.sh" show "$TASK_ID" >/dev/null; then
+                echo "CHECKPOINT_STATUS=FAIL"
+                echo "ERROR=No se puede asociar la tarea $TASK_ID"
+                exit 1
+            fi
+            case " $TASK_IDS " in
+                *" $TASK_ID "*) ;;
+                *)
+                    TASK_IDS="$TASK_IDS $TASK_ID"
+                    MSG=$(printf '%s\n' "$MSG" | git interpret-trailers --trailer "Task-ID: $TASK_ID")
+                    ;;
+            esac
+            shift 2
+        done
 
         # Verificar si aún quedan marcadores <<<<<<< / >>>>>>> en disco antes de permitir guardar/cerrar un merge
         ACTIVE_MARKERS=$(find_marker_files)
@@ -401,6 +427,13 @@ case "$SUBCMD" in
                 echo "MERGE_STATUS=OKF_INVALID"
                 echo "MERGED_FROM=$RESOLVED_SRC"
                 echo "$OKF_POST"
+                exit 1
+            fi
+            if ! TASK_POST=$(sh ".agents/scripts/tasks-lint.sh" 2>&1); then
+                git reset --merge "$PRE_MERGE_SHA" 2>/dev/null || true
+                echo "MERGE_STATUS=TASK_INVALID"
+                echo "MERGED_FROM=$RESOLVED_SRC"
+                echo "$TASK_POST"
                 exit 1
             fi
             echo "MERGE_STATUS=CLEAN"

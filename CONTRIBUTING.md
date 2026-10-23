@@ -43,6 +43,7 @@ Desde la carpeta principal del repositorio, ejecuta:
 
 ```sh
 sh .agents/tests/run-tests.sh
+sh .agents/tests/run-task-tests.sh
 ```
 
 La suite prepara una copia temporal aislada para probar los guardados, los borradores, las restauraciones y la validación de memoria. Al terminar debe indicar `FAIL=0` y `TEST_SUITE_VERDICT=PASS`. Un resultado de fallo devuelve un código de salida distinto de cero; revisa las líneas `[FAIL]` y sus detalles antes de enviar tu propuesta.
@@ -60,6 +61,13 @@ git diff --check
 ```
 
 El [flujo de GitHub Actions](.github/workflows/tests.yml) ejecuta la misma suite en Linux, macOS y Windows con cada actualización y solicitud de cambios. Consulta sus resultados en la pestaña **Actions**; ejecutar las pruebas localmente ayuda a detectar problemas antes de subirlos.
+
+La suite de tareas está en `.agents/tests/run-task-tests.sh`, usa un repositorio
+temporal independiente y debe terminar con `FAIL=0` y `TASK_TEST_VERDICT=PASS`.
+Si cambias el gestor, añade regresiones allí. Comprueba tanto el Markdown local
+con `sh .agents/scripts/tasks-lint.sh` como los archivos preparados con
+`sh .agents/scripts/tasks-lint.sh --staged`. Conserva la comprobación de evidencia,
+los respaldos de restauración y la compatibilidad con borradores paralelos.
 
 ## Trabajar en la landing
 

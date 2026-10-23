@@ -6,6 +6,10 @@ Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
 ### Añadido
 
+- Gestor local de tareas Markdown con estados pendiente, en curso, bloqueada y terminada, criterios de aceptación, evidencia y resultado obligatorio al cerrar.
+- Asociaciones `Task-ID` de una o varias tareas a puntos de guardado e historial por tarea en el borrador actual.
+- Habilidad `task-manager`, validación de tareas preparadas al guardar y pruebas de regresión del ciclo de tareas en Linux, macOS y Windows.
+
 - Landing en GitHub Pages con guías para usuarios técnicos y no técnicos, diagramas, ejemplos interactivos, navegación por teclado y animaciones con pausa y movimiento reducido.
 - [Prompt de despliegue](prompt.md) listo para copiar a un agente y publicar la landing en una copia del template.
 - Constructor con una lista explícita de archivos públicos y siete pruebas para enlaces, rutas de proyecto y exclusión de documentos privados.

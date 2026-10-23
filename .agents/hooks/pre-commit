@@ -5,6 +5,7 @@
 #   2. Archivos sensibles / credenciales accidentales (.env, llaves privadas).
 #   3. Archivos individuales mayores a 50 MB que degraden el repositorio.
 #   4. Cualquier violación del estándar Open Knowledge Format (OKF) en knowledge/.
+#   5. Tareas Markdown inválidas o terminadas sin criterios verificados y resultado.
 
 set -eu
 
@@ -62,6 +63,13 @@ if [ -d "$REPO_ROOT/knowledge" ] || [ -n "$(git ls-files -- knowledge)" ] || git
         echo "$OKF_OUT"
         BLOCK_ERRORS=$((BLOCK_ERRORS + 1))
     fi
+fi
+
+# 5. Validar tareas en la versión exacta que se va a guardar.
+if ! TASK_OUT=$(sh "$REPO_ROOT/.agents/scripts/tasks-lint.sh" --staged 2>&1); then
+    echo "PRE_COMMIT_FAIL: Las tareas no cumplen su formato o sus reglas de cierre:"
+    echo "$TASK_OUT"
+    BLOCK_ERRORS=$((BLOCK_ERRORS + 1))
 fi
 
 if [ "$BLOCK_ERRORS" -gt 0 ]; then

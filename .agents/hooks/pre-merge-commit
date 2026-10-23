@@ -1,5 +1,5 @@
 #!/bin/sh
-# pre-merge-commit — Ejecuta las mismas validaciones deterministas (OKF, secretos, tamaño) al fusionar borradores.
+# pre-merge-commit — Valida memoria, tareas, secretos y tamaño al incorporar borradores.
 
 set -eu
 

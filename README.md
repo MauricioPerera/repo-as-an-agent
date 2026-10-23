@@ -29,12 +29,14 @@ Para publicar esta landing en tu propia copia, entrega a tu agente el [prompt de
    - **Cero dependencias adicionales:** solo requiere tener **Git** instalado (compatible con *Git for Windows*, macOS, Linux y *Git Worktrees*).
    - `okf-lint.sh`: valida el perfil YAML de la memoria y sus enlaces (incluyendo espacios y paréntesis). Al guardar, revisa los archivos exactos preparados y sus destinos, aunque difieran de los archivos locales.
    - `git-ops.sh`: gestiona puntos de guardado, borradores paralelos, conciliaciones y reversiones sin pérdida de datos (`undo-safe` genera etiquetas inmutables `rescate/*` antes de restaurar cualquier versión).
+   - `tasks.sh`: gestiona tareas Markdown con cuatro estados, criterios verificados con evidencia e historial vinculado a puntos de guardado; `tasks-lint.sh` valida su formato y las reglas de cierre.
    - Hooks `pre-commit` y `pre-merge-commit`: bloquean automáticamente secretos (`.env`, llaves privadas), archivos >50 MB, marcadores de conflicto y nodos OKF inválidos.
 4. **Skills modulares (`.agents/skills/`):**
    - `onboarding`: entrevista breve de bienvenida para personalizar el espacio en la primera sesión.
    - `safe-versioning`: máquina del tiempo y borradores en lenguaje humano.
    - `okf-librarian`: curaduría y enlace de conocimiento duradero.
    - `workspace-assistant`: organización de bandeja de entrada, edición masiva segura y auditoría de tablas CSV.
+   - `task-manager`: pendientes, bloqueos, verificación y continuidad del trabajo entre conversaciones.
 
 ---
 
@@ -45,16 +47,68 @@ Para publicar esta landing en tu propia copia, entrega a tu agente el [prompt de
 3. Escribe: *"Hola, configuremos este espacio para mi proyecto"*.
    - En el primer turno, `boot-check.sh` activará automáticamente los hooks locales de Git y detectará el modo plantilla para guiarte en la personalización inicial.
 
+## Tareas vinculadas a puntos de guardado
+
+Pídele al agente: *"Añade una tarea para revisar la propuesta"*, *"¿Qué queda
+pendiente?"* o *"Retoma la tarea que estaba en curso"*. Las tareas son archivos
+legibles en `workspace/documentos/tareas/`. El gestor usa Git, `sh`, `awk` y las
+herramientas habituales incluidas en Git Bash, macOS y Linux, sin instalar paquetes.
+
+Los estados son **pendiente**, **en curso**, **bloqueada** y **terminada**. Una
+tarea bloqueada necesita un motivo. Para terminarla, todos sus criterios deben
+estar marcados como verificados con evidencia, y debe registrarse un resultado.
+El agente debe comprobar la evidencia; el validador verifica su presencia y formato.
+
+Ejemplo técnico, sustituyendo `T-123456789abc` por el ID que devuelve la creación:
+
+```sh
+sh .agents/scripts/tasks.sh create "Revisar propuesta" "Preparar el envío al cliente" "Comprobar las cifras"
+sh .agents/scripts/tasks.sh list
+sh .agents/scripts/tasks.sh status T-123456789abc "en curso"
+sh .agents/scripts/tasks.sh verify T-123456789abc 1 "Cifras contrastadas con el presupuesto aprobado"
+sh .agents/scripts/tasks.sh status T-123456789abc terminada "Propuesta revisada y lista para enviar"
+sh .agents/scripts/tasks.sh checkpoint T-123456789abc "Guardar la propuesta revisada"
+sh .agents/scripts/tasks.sh history T-123456789abc
+```
+
+`show ID` muestra el archivo y `list "en curso"` filtra por estado. Para bloquear,
+usa `status ID bloqueada "motivo"`; para reabrir una tarea terminada, cambia su
+estado aportando un motivo. `unverify ID número` retira una verificación después
+de reabrir. El resultado anterior se conserva hasta el próximo cierre.
+
+Crear, verificar o cambiar el estado edita el Markdown sin guardar automáticamente.
+Antes de crear un punto, revisa qué cambió: el procedimiento de guardado incluye
+todos los cambios del repositorio. Puedes asociar varias tareas al mismo punto:
+
+```sh
+sh .agents/scripts/git-ops.sh checkpoint "Avance compartido" --task T-123456789abc --task T-abcdef123456
+```
+
+La asociación se escribe como metadatos `Task-ID` en el mensaje de guardado.
+`history ID` consulta el historial del borrador actual y reúne cambios del archivo
+de tarea y asociaciones explícitas, incluso para tareas que fueron eliminadas.
+Una tarea puede tener varios guardados, y guardar no cambia su estado. Los
+guardados sin cambios siguen sin crear puntos vacíos.
+
+Los encabezados del archivo definen su formato; puedes añadir secciones de notas.
+`sh .agents/scripts/tasks.sh lint` diagnostica ediciones manuales inválidas. Los
+controles de guardado revisan los archivos preparados y bloquean cierres incompletos.
+Las tareas participan en las restauraciones con respaldo del espacio y en los
+borradores paralelos. Permanecen fuera del artefacto público de GitHub Pages.
+
 ## Validación automatizada
 
 Para ejecutar la suite de pruebas deterministas en un entorno temporal aislado:
 
 ```sh
 sh .agents/tests/run-tests.sh
+sh .agents/tests/run-task-tests.sh
 ```
 
 Incluye regresiones para archivos ignorados que colisionan con una restauración,
 memoria y enlaces preparados distintos de la copia local, y encabezados YAML mal formados.
+La suite adicional del gestor cubre el ciclo de tareas, evidencia, asociaciones,
+contenido preparado, restauraciones y borradores paralelos, también en un entorno aislado.
 
 El flujo [Pruebas de GitHub Actions](.github/workflows/tests.yml) ejecuta esta misma
 suite en Linux, macOS y Windows con cada actualización del repositorio y cada

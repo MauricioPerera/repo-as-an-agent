@@ -56,8 +56,10 @@ En tu primera interacción dentro de una sesión nueva:
 - **Diagnóstico de sesión:** `sh .agents/scripts/boot-check.sh`
 - **Inicialización / auto-reparación:** `sh .agents/scripts/bootstrap.sh`
 - **Validar memoria OKF:** `sh .agents/scripts/okf-lint.sh`
+- **Tareas del proyecto:** `sh .agents/scripts/tasks.sh list`; para crear, avanzar,
+  verificar, terminar o vincular tareas, carga `task-manager` del catálogo.
 - **Operaciones seguras de Git (`git-ops.sh`):**
-  - `sh .agents/scripts/git-ops.sh checkpoint "<nota clara en humano>"`
+  - `sh .agents/scripts/git-ops.sh checkpoint "<nota clara en humano>" [--task ID ...]`
   - `sh .agents/scripts/git-ops.sh draft-create "<nombre-del-borrador>"`
   - `sh .agents/scripts/git-ops.sh draft-list`
   - `sh .agents/scripts/git-ops.sh draft-switch "<nombre-del-borrador|main>"`
@@ -82,3 +84,5 @@ No asumas los detalles de los flujos complejos. **Lee el `SKILL.md` correspondie
    - Cuándo usar: Guardar decisiones, glosarios, reglas de negocio o contexto duradero en `knowledge/` cumpliendo el esquema YAML y enlaces de Open Knowledge Format.
 4. **Asistente documental y de datos (`workspace-assistant`):** [`.agents/skills/workspace-assistant/SKILL.md`](./.agents/skills/workspace-assistant/SKILL.md)
    - Cuándo usar: Procesar elementos sueltos de `workspace/bandeja/`, realizar ediciones masivas auditadas en `workspace/documentos/`, limpiar/auditar CSVs en `workspace/datos/` o generar salidas en `workspace/entregables/`.
+5. **Gestor de tareas (`task-manager`):** [`.agents/skills/task-manager/SKILL.md`](./.agents/skills/task-manager/SKILL.md)
+   - Cuándo usar: Organizar pendientes del proyecto, retomar trabajo, registrar bloqueos, verificar criterios de aceptación y relacionar avances con puntos de guardado. No confundir con chats ni recordatorios programados.

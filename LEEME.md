@@ -34,6 +34,21 @@ Todo tu trabajo vive dentro de la carpeta **`workspace/`**:
 
 ---
 
+## Para organizar tus pendientes
+
+Puedes decirle a tu asistente:
+
+* *"Crea una tarea para revisar la propuesta y anota cómo sabremos que está lista."*
+* *"Muéstrame las tareas pendientes y retoma la que estaba en curso."*
+* *"Esta tarea está bloqueada porque falta la respuesta del cliente."*
+* *"Comprueba los criterios, registra el resultado y guarda el avance de esta tarea."*
+
+Las tareas quedan en `workspace/documentos/tareas/`, como archivos que puedes
+leer. Cada una puede estar **pendiente**, **en curso**, **bloqueada** o **terminada**.
+El asistente debe registrar qué comprobó antes de darla por terminada. Guardar
+un avance conserva una versión y lo relaciona con la tarea; puedes guardar
+varios avances durante el mismo trabajo.
+
 ## Carpetas que mantiene tu asistente (no necesitas tocarlas)
 
 * **`knowledge/`**: Es la memoria ordenada de tu asistente (escrita en archivos legibles por si algún día quieres consultarlos).

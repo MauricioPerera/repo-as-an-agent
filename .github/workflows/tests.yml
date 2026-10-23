@@ -27,6 +27,8 @@ jobs:
           persist-credentials: false
       - name: Ejecutar suite determinista
         run: sh .agents/tests/run-tests.sh
+      - name: Ejecutar suite del gestor de tareas
+        run: sh .agents/tests/run-task-tests.sh
 
   landing:
     name: Validar la landing
