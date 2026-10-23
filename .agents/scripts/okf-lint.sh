@@ -98,7 +98,9 @@ while IFS= read -r FILE || [ -n "$FILE" ]; do
     else
         CONCEPTS_CHECKED=$((CONCEPTS_CHECKED + 1))
     fi
-    if ! FM_OUT=$(awk -v structural="$STRUCTURAL" -f "$SCRIPT_DIR/okf-frontmatter.awk" "$FILE"); then
+    # La sintaxis YAML usa delimitadores ASCII. Recorrer bytes evita diferencias
+    # de índices multibyte entre GNU awk y el awk de macOS sin alterar el UTF-8.
+    if ! FM_OUT=$(LC_ALL=C awk -v structural="$STRUCTURAL" -f "$SCRIPT_DIR/okf-frontmatter.awk" "$FILE"); then
         report_error "$REL_FILE: $FM_OUT"
     fi
 

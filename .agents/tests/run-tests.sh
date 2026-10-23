@@ -587,6 +587,7 @@ type: Decision Record # Comentario de escalar plano
 title: 'Un título con ''comillas'' y dos puntos: aquí'
 description: "Texto con \"comillas\", barra \\ y Unicode \u00f1" # Comentario
 tags: ['con, coma', "con ] corchete", simple,] # Lista válida
+autor: Muñoz y Pérez
 timestamp: '2026-10-22T22:45:00-06:00'
 opcional: # Valor nulo permitido en campos opcionales
 ---

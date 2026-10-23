@@ -58,7 +58,8 @@ function scalar(in_list,    start, quote, ch, esc, digits, hex, i, point, digit)
     }
 
     start = pos
-    if (ch ~ /[\[\]{},#&*!|>\047\042%@`]/ || (ch ~ /[-?:]/ && substr(value, pos + 1, 1) ~ /[ \t]/)) {
+    if (in_list && ch ~ /[?:]/) fail("las listas solo admiten escalares; usa comillas para este valor")
+    if (ch ~ /[\[\]{},#&*!|>\047\042%@`]/ || (ch ~ /[-?:]/ && (pos == length(value) || substr(value, pos + 1, 1) ~ /[ \t]/))) {
         fail("se esperaba un escalar; usa comillas para caracteres especiales")
     }
     while (pos <= length(value)) {
@@ -100,7 +101,7 @@ function field_value(    ch) {
 
     # Después de una comilla o lista solo se permite espacio y un comentario.
     ch = substr(value, pos, 1)
-    if (ch == "#") fail("el comentario debe estar separado por un espacio")
+    if (ch == "#" && pos > 1 && substr(value, pos - 1, 1) !~ /[ \t]/) fail("el comentario debe estar separado por un espacio")
     spaces()
     if (pos <= length(value) && substr(value, pos, 1) != "#") fail("contenido inesperado después del valor")
 }
@@ -120,6 +121,7 @@ NR == 1 {
 }
 
 in_frontmatter {
+    if ($0 ~ /[\001-\010\013\014\016-\037\177]/) fail("carácter de control no permitido")
     if ($0 ~ /^---[[:space:]]*$/) {
         in_frontmatter = 0
         closed = 1
