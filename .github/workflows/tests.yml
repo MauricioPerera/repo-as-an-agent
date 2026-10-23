@@ -45,3 +45,37 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'test_*.py'
       - name: Validar la construcción pública
         run: python3 scripts/build-site.py
+
+  browser:
+    name: Landing en escritorio y móvil (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tests/browser
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Preparar Node para las pruebas del navegador
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - name: Instalar dependencias de pruebas fijadas
+        run: npm ci
+      - name: Instalar Chromium para las pruebas
+        run: npx playwright install --with-deps chromium
+      - name: Comprobar estados y portapapeles en ambos tamaños
+        env:
+          PYTHON: python3
+        run: npm test
+      - name: Conservar el informe y las trazas si falla el navegador
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: diagnostico-playwright
+          path: |
+            tests/browser/playwright-report/
+            tests/browser/test-results/
+          retention-days: 7

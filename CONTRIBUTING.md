@@ -4,7 +4,7 @@ Puedes ayudar corrigiendo errores, mejorando la documentación o ampliando las p
 
 ## Preparar una copia de trabajo
 
-Necesitas Git y una terminal con `sh` y las herramientas POSIX habituales, como `awk`, `sed` y `grep`. En Windows, utiliza **Git Bash**, incluido en Git for Windows. En macOS y Linux puedes usar la terminal del sistema. La suite no requiere instalar paquetes adicionales.
+Necesitas Git y una terminal con `sh` y las herramientas POSIX habituales, como `awk`, `sed` y `grep`. En Windows, utiliza **Git Bash**, incluido en Git for Windows. En macOS y Linux puedes usar la terminal del sistema. Las suites del motor y del gestor no requieren instalar paquetes adicionales. Las pruebas del navegador tienen un entorno de desarrollo separado, descrito más abajo.
 
 1. Crea una copia del repositorio en tu cuenta con el botón **Fork** de GitHub.
 2. Descarga tu copia sustituyendo `TU-USUARIO` por tu usuario de GitHub:
@@ -90,6 +90,61 @@ GitHub Actions. Si agregas recursos públicos, inclúyelos explícitamente en
 `PUBLIC_FILES` de `scripts/build-site.py`. El artefacto `_site/` debe contener solo
 la landing y el prompt; conserva fuera los documentos y la memoria del usuario.
 El flujo de Pages publica desde `main` después de validar y construir el sitio.
+También se ejecuta al publicar una release: solicita otra ejecución desde la rama
+predeterminada y consulta la última release estable mediante `--fetch-release`.
+El trabajo que solicita esa ejecución tiene `actions: write`; la construcción
+mantiene `contents: read`. Así se conserva la protección de Pages que permite
+publicar desde la rama principal y no desde etiquetas. No escribas el
+número de la última versión a mano en `site/index.html`; conserva el espacio
+`release:start` / `release:end`. Las menciones a la versión en la que se añadió
+una función son contenido histórico y se mantienen.
+
+Para probar la cabecera con releases reales, ejecuta:
+
+```sh
+python scripts/build-site.py --fetch-release --repository PROPIETARIO/REPOSITORIO
+```
+
+La construcción normal funciona sin red y muestra «Ver versiones». Si la API no
+encuentra releases también se usa ese enlace; otros errores detienen la publicación.
+En Actions se usa el permiso `contents: read` del token de la ejecución. No copies
+tokens al código ni al HTML generado.
+
+### Pruebas de navegador con Playwright
+
+Necesitas Node.js 22 o posterior y Python. Desde la raíz:
+
+```sh
+cd tests/browser
+npm ci
+npx playwright install chromium
+npm test
+```
+
+En Linux, si faltan bibliotecas del sistema, usa
+`npx playwright install --with-deps chromium`, como hace GitHub Actions.
+Si tu intérprete se llama `python3`, ejecuta `PYTHON=python3 npm test` desde Git Bash,
+macOS o Linux. La suite construye la landing antes de iniciar su servidor local,
+solo expone los archivos públicos y prueba la ruta `/repo-as-an-agent/`.
+
+Los proyectos `escritorio` (1280 × 900) y `movil` (390 × 844, con emulación táctil)
+verifican los cuatro estados, criterios pendientes y verificados, motivo de bloqueo,
+evidencia y resultado de cierre, navegación por teclado y ausencia de desbordamiento.
+Comprueban el contenido real copiado por todos los botones, incluidos los ejemplos
+técnicos y `prompt.md`, y las alternativas cuando el navegador deniega la copia.
+Se ejecutan en serie para evitar interferencias entre portapapeles.
+
+Puedes ejecutar un solo tamaño con `npm test -- --project=movil` y consultar el
+informe con `npm run report`. Ante un fallo se conservan capturas y trazas en
+`tests/browser/test-results/`; abre una traza con
+`npx playwright show-trace RUTA/trace.zip`. Esos archivos, el informe HTML y
+`node_modules/` quedan excluidos del repositorio y de Pages.
+Si falla el trabajo de navegador en GitHub Actions, su artefacto
+`diagnostico-playwright` conserva el informe y las trazas durante siete días.
+
+`package.json` y su archivo de bloqueo solo pertenecen a las pruebas de desarrollo.
+El motor en `.agents/`, el gestor y la landing publicada mantienen sus requisitos
+anteriores. No añadas Playwright a sus scripts de ejecución ni a sus recursos públicos.
 
 ## Guardar y enviar la propuesta
 

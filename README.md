@@ -117,7 +117,9 @@ El flujo [Pruebas de GitHub Actions](.github/workflows/tests.yml) ejecuta esta m
 suite en Linux, macOS y Windows con cada actualización del repositorio y cada
 solicitud de cambios. También puede iniciarse manualmente desde la pestaña Actions.
 La landing tiene además pruebas de enlaces, rutas portables y límites de publicación
-en `tests/test_site.py`, ejecutadas por el mismo flujo.
+en `tests/test_site.py`, ejecutadas por el mismo flujo. Las pruebas con Playwright
+de `tests/browser/` comprueban los estados y el contenido del portapapeles en
+escritorio y móvil, incluidos los pedidos de tareas y `prompt.md`.
 
 ## Landing y GitHub Pages
 
@@ -140,11 +142,42 @@ El constructor genera `_site/` con una lista explícita de archivos públicos; n
 incluye `workspace/` ni `knowledge/`. `prompt.md` se copia desde la raíz durante la
 construcción, para mantener una sola fuente de las instrucciones de despliegue.
 
+La cabecera obtiene la **última versión estable publicada** al construir el sitio
+en GitHub Actions. El flujo consulta las releases del repositorio actual y genera
+tanto el texto como su enlace, sin consultas a GitHub desde el navegador. Una copia
+sin releases muestra «Ver versiones» y enlaza a sus propias versiones. Para una
+vista local sin acceso a la red se usa ese mismo mensaje; para consultar GitHub:
+
+```sh
+python scripts/build-site.py --fetch-release --repository PROPIETARIO/REPOSITORIO
+```
+
 El flujo [Publicar landing](.github/workflows/pages.yml) comprueba y publica el sitio
-cuando cambian sus archivos en `main`, y también admite ejecución manual. En tu
-copia activa **Settings → Pages → Build and deployment → Source → GitHub Actions**.
+cuando cambian sus archivos en `main` o se publica una release, y también admite
+ejecución manual. Al publicar una release solicita una ejecución desde la rama
+predeterminada, compatible con la protección de Pages, y consulta la última versión
+estable; una versión preliminar no sustituye a la
+estable. Si GitHub falla, se detiene la publicación para conservar el sitio anterior.
+En tu copia activa **Settings → Pages → Build and deployment → Source → GitHub Actions**.
 Si usas otra rama predeterminada, ajusta el filtro del flujo. Pages en repositorios
 privados depende del plan de GitHub; activar Pages no requiere hacer público el repo.
+
+Para ejecutar también las pruebas del navegador necesitas Node.js 22 o posterior
+y Python para construir la landing:
+
+```sh
+cd tests/browser
+npm ci
+npx playwright install chromium
+npm test
+```
+
+La suite construye y sirve únicamente `_site/` bajo una ruta de proyecto local.
+Usa Chromium en escritorio de 1280 px y móvil emulado de 390 px con interacción
+táctil, y comprueba las copias leyendo el portapapeles real del navegador.
+Playwright es una dependencia de desarrollo aislada en `tests/browser/`;
+**el gestor de tareas y el sitio publicado siguen sin dependencias adicionales**.
+Consulta la [guía para contribuir](CONTRIBUTING.md#trabajar-en-la-landing) para más detalles.
 El artefacto público es únicamente `_site/`.
 
 Para delegar todo el proceso, copia el contenido de [prompt.md](prompt.md) a tu agente.

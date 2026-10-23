@@ -2,6 +2,15 @@
 
 Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
+## Pendiente de publicación
+
+### Añadido
+
+- Cabecera de la landing con la última release estable y su enlace generados durante la publicación de Pages; se actualiza al publicar una release y usa las versiones del repositorio actual. Las copias sin releases muestran «Ver versiones».
+- Pruebas con Playwright en escritorio y móvil emulado para los cuatro estados, evidencia y resultado de cierre, navegación por teclado y todos los botones de copia, incluido `prompt.md` y los casos de copia denegada.
+- Regresiones de la versión automática para repositorios nuevos, etiquetas escapadas y fallos de la API. Un fallo de consulta detiene el despliegue y conserva la publicación anterior.
+- Entorno de pruebas del navegador aislado en `tests/browser/`, con dependencias fijadas y ejecución en GitHub Actions. El gestor mantiene sus requisitos de Git y herramientas POSIX, sin paquetes adicionales.
+
 ## [v1.1.1] - 2026-10-23
 
 Guía visual del gestor de tareas y acceso directo desde el README.

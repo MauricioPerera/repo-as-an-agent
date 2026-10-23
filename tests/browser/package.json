@@ -1,0 +1,13 @@
+{
+  "name": "repo-as-an-agent-browser-tests",
+  "private": true,
+  "description": "Pruebas de desarrollo de la landing; el motor no usa Node ni Playwright.",
+  "scripts": {
+    "test": "playwright test",
+    "report": "playwright show-report"
+  },
+  "engines": { "node": ">=22" },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}

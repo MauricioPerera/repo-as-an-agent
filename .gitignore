@@ -23,3 +23,8 @@ id_ed25519
 _site/
 __pycache__/
 /workspace/documentos/tareas/.task-*
+
+# Herramientas de desarrollo de la landing (no las necesita el gestor)
+/tests/browser/node_modules/
+/tests/browser/test-results/
+/tests/browser/playwright-report/
