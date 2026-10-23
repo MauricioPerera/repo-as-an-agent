@@ -8,6 +8,7 @@ Plantilla universal **agnóstica de motor** (*Antigravity, Codex, Claude Code, O
 
 **Primera versión estable:** [v1.0.0](https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.0.0).
 Consulta las novedades en el [historial de cambios](CHANGELOG.md).
+Para proponer mejoras y ejecutar las pruebas, consulta la [guía para contribuir](CONTRIBUTING.md).
 
 > **¿No eres perfil técnico?** Abre directamente [**LEEME.md**](./LEEME.md) para ver cómo usar este espacio con palabras sencillas.
 
