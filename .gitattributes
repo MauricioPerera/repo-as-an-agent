@@ -1,0 +1,10 @@
+# Forzar finales de linea LF en scripts POSIX y hooks para compatibilidad total en Windows, macOS y Linux
+*.sh text eol=lf
+.agents/hooks/* text eol=lf
+
+# Documentacion, memoria OKF y datos tabulares consistentes en Git
+*.md text eol=lf
+*.csv text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf

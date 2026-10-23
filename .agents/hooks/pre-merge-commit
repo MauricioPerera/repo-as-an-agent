@@ -1,0 +1,7 @@
+#!/bin/sh
+# pre-merge-commit — Ejecuta las mismas validaciones deterministas (OKF, secretos, tamaño) al fusionar borradores.
+
+set -eu
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+exec sh "$REPO_ROOT/.agents/hooks/pre-commit"

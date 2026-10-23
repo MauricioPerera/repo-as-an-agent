@@ -1,0 +1,22 @@
+# Archivos temporales del sistema operativo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Archivos temporales de editores y ofimatica (~$documento.docx)
+~$*
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# Secretos y variables de entorno locales (nunca subir a Git)
+.env
+.env.*
+*.pem
+*.key
+id_rsa
+id_ed25519
+
+# Directorios temporales de pruebas
+.tmp-test/

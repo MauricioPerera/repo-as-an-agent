@@ -1,0 +1,72 @@
+#!/bin/sh
+# pre-commit — Gate determinista automático antes de cada guardado en Git.
+# Bloquea:
+#   1. Marcadores de conflicto de Git sin resolver (<<<<<<<, >>>>>>>).
+#   2. Archivos sensibles / credenciales accidentales (.env, llaves privadas).
+#   3. Archivos individuales mayores a 50 MB que degraden el repositorio.
+#   4. Cualquier violación del estándar Open Knowledge Format (OKF) en knowledge/.
+
+set -eu
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+cd "$REPO_ROOT"
+
+MAX_BYTES=52428800 # 50 MB
+BLOCK_ERRORS=0
+
+TMP_STAGED="${TMPDIR:-/tmp}/agty_staged_$$.txt"
+trap 'rm -f "$TMP_STAGED"' EXIT INT TERM
+
+# Incluir R (renombrados/movidos) y C (copiados) además de A y M
+git diff --cached --name-only --diff-filter=ACMR > "$TMP_STAGED"
+
+while IFS= read -r STAGED_FILE || [ -n "$STAGED_FILE" ]; do
+    [ -z "$STAGED_FILE" ] && continue
+
+    # 1. Bloquear archivos de credenciales obvias (permitiendo llaves públicas .pub si existieran)
+    BASENAME=$(basename -- "$STAGED_FILE")
+    case "$BASENAME" in
+        *.pub)
+            ;;
+        .env|.env.*|*.pem|*.key|id_rsa|id_ed25519)
+            echo "PRE_COMMIT_FAIL: Archivo sensible detectado en el guardado: '$STAGED_FILE'. Retíralo antes de guardar."
+            BLOCK_ERRORS=$((BLOCK_ERRORS + 1))
+            continue
+            ;;
+    esac
+
+    # 2. Verificar tamaño del blob en staging
+    BLOB_SIZE=$(git cat-file -s ":$STAGED_FILE" 2>/dev/null || echo 0)
+    if [ "$BLOB_SIZE" -gt "$MAX_BYTES" ]; then
+        echo "PRE_COMMIT_FAIL: '$STAGED_FILE' supera el límite seguro de 50 MB ($BLOB_SIZE bytes)."
+        BLOCK_ERRORS=$((BLOCK_ERRORS + 1))
+        continue
+    fi
+
+    # 3. Detectar marcadores de conflicto en el contenido preparado
+    if git show ":$STAGED_FILE" 2>/dev/null | awk '
+        /^<<<<<<< / { found=1; exit }
+        /^>>>>>>> / { found=1; exit }
+        END { exit !found }
+    '; then
+        echo "PRE_COMMIT_FAIL: '$STAGED_FILE' contiene marcadores de conflicto sin resolver (<<<<<<< / >>>>>>>)."
+        BLOCK_ERRORS=$((BLOCK_ERRORS + 1))
+    fi
+done < "$TMP_STAGED"
+
+# 4. Validar integridad de la memoria OKF si existe knowledge/
+if [ -d "$REPO_ROOT/knowledge" ]; then
+    if ! OKF_OUT=$(sh "$REPO_ROOT/.agents/scripts/okf-lint.sh" "$REPO_ROOT/knowledge" 2>&1); then
+        echo "PRE_COMMIT_FAIL: La memoria en knowledge/ no cumple el estándar OKF:"
+        echo "$OKF_OUT"
+        BLOCK_ERRORS=$((BLOCK_ERRORS + 1))
+    fi
+fi
+
+if [ "$BLOCK_ERRORS" -gt 0 ]; then
+    echo "COMMIT_BLOCKED=true"
+    echo "TOTAL_BLOCKING_ISSUES=$BLOCK_ERRORS"
+    exit 1
+fi
+
+exit 0
