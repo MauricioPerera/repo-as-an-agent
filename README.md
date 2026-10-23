@@ -7,6 +7,7 @@
 Plantilla universal **agnóstica de motor** (*Antigravity, Codex, Claude Code, OpenCode, Cursor*) que convierte un repositorio Git en un asistente documental y de memoria seguro para **personas no técnicas**.
 
 **Primera versión estable:** [v1.0.0](https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.0.0).
+Consulta las novedades en el [historial de cambios](CHANGELOG.md).
 
 > **¿No eres perfil técnico?** Abre directamente [**LEEME.md**](./LEEME.md) para ver cómo usar este espacio con palabras sencillas.
 
