@@ -184,6 +184,9 @@ en `tests/test_site.py`, ejecutadas por el mismo flujo. Las pruebas con Playwrig
 de `tests/browser/` comprueban los estados y el contenido del portapapeles en
 escritorio y móvil, incluidos los pedidos de tareas y `prompt.md`.
 
+Consulta la [guía visual del observador adversarial de v1.4.0](https://mauricioperera.github.io/repo-as-an-agent/#observador)
+para explorar ejemplos de canarios, evidencias verificables y límites del aislamiento.
+
 La [propuesta de batería adversarial](docs/testing-adversarial.md) define 60
 escenarios para el motor, los datos, el agente y la web, con prioridades,
 evidencias y criterios de aprobación. Su [primera fase](docs/observador-adversarial.md)
