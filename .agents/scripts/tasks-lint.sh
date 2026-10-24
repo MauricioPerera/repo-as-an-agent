@@ -6,10 +6,11 @@ ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
 cd "$ROOT"
 TASK_DIR=workspace/documentos/tareas
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/agty-tasks-lint.XXXXXX")
-trap 'rm -f "$TMP/list" "$TMP/blob" "$TMP/artifacts"; rmdir "$TMP"' EXIT
+trap 'rm -f "$TMP/list" "$TMP/blob" "$TMP/artifacts" "$TMP/attempts" "$TMP/attempt-task"; rmdir "$TMP"' EXIT
 trap 'exit 1' HUP INT TERM
 fail() { printf 'TASK_LINT_STATUS=FAIL\nERROR=%s\n' "$1"; exit 1; }
 . "$SCRIPT_DIR/task-artifacts.sh"
+. "$SCRIPT_DIR/task-attempts.sh"
 MODE=${1:-}
 [ "$#" -le 1 ] || fail "Uso: tasks-lint.sh [--staged]"
 case "$MODE" in ''|--staged) ;; *) fail "Opción desconocida: $MODE" ;; esac

@@ -57,7 +57,10 @@ En tu primera interacción dentro de una sesión nueva:
 - **Inicialización / auto-reparación:** `sh .agents/scripts/bootstrap.sh`
 - **Validar memoria OKF:** `sh .agents/scripts/okf-lint.sh`
 - **Tareas del proyecto:** `sh .agents/scripts/tasks.sh list`; para crear, avanzar,
-  verificar, terminar o vincular tareas, carga `task-manager` del catálogo.
+  verificar, terminar, registrar intentos o vincular tareas, carga `task-manager` del catálogo.
+- **Evaluar comportamiento:** `sh .agents/scripts/agent-eval.sh list`; prepara
+  escenarios ficticios y evalúa sus resultados desde el repositorio original.
+  Los controles simulados de CI no miden un modelo real.
 - **Operaciones seguras de Git (`git-ops.sh`):**
   - `sh .agents/scripts/git-ops.sh checkpoint "<nota clara en humano>" [--task ID ...]`
   - `sh .agents/scripts/git-ops.sh draft-create "<nombre-del-borrador>"`
@@ -85,4 +88,4 @@ No asumas los detalles de los flujos complejos. **Lee el `SKILL.md` correspondie
 4. **Asistente documental y de datos (`workspace-assistant`):** [`.agents/skills/workspace-assistant/SKILL.md`](./.agents/skills/workspace-assistant/SKILL.md)
    - Cuándo usar: Procesar elementos sueltos de `workspace/bandeja/`, realizar ediciones masivas auditadas en `workspace/documentos/`, limpiar/auditar CSVs en `workspace/datos/` o generar salidas en `workspace/entregables/`.
 5. **Gestor de tareas (`task-manager`):** [`.agents/skills/task-manager/SKILL.md`](./.agents/skills/task-manager/SKILL.md)
-   - Cuándo usar: Organizar pendientes del proyecto, retomar trabajo, registrar bloqueos, verificar criterios de aceptación y relacionar avances con puntos de guardado. Incluye el piloto ADD con referencia acordada y evidencias de entrega. No confundir con chats ni recordatorios programados.
+   - Cuándo usar: Organizar pendientes del proyecto, retomar trabajo, registrar bloqueos e intentos, verificar criterios de aceptación y relacionar avances con puntos de guardado. Incluye ADD y escenarios de evaluación del comportamiento. No confundir con chats ni recordatorios programados.

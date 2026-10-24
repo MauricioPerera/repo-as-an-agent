@@ -29,7 +29,8 @@ Para publicar esta landing en tu propia copia, entrega a tu agente el [prompt de
    - **Cero dependencias adicionales:** solo requiere tener **Git** instalado (compatible con *Git for Windows*, macOS, Linux y *Git Worktrees*).
    - `okf-lint.sh`: valida el perfil YAML de la memoria y sus enlaces (incluyendo espacios y paréntesis). Al guardar, revisa los archivos exactos preparados y sus destinos, aunque difieran de los archivos locales.
    - `git-ops.sh`: gestiona puntos de guardado, borradores paralelos, conciliaciones y reversiones sin pérdida de datos (`undo-safe` genera etiquetas inmutables `rescate/*` antes de restaurar cualquier versión).
-   - `tasks.sh`: gestiona tareas Markdown con cuatro estados, criterios verificados con evidencia e historial vinculado a puntos de guardado; incluye un piloto ADD con referencia acordada y entregas comprobables. `tasks-lint.sh` valida su formato y las reglas de cierre.
+   - `tasks.sh`: gestiona tareas Markdown con cuatro estados, criterios verificados con evidencia e historial vinculado a puntos de guardado; incluye un piloto ADD y un registro de intentos con contexto, herramienta y desenlace. `tasks-lint.sh` valida su formato y las reglas de cierre.
+   - `agent-eval.sh`: prepara escenarios ficticios para evaluar el respeto de referencias, la evidencia insuficiente y los cambios de alcance; comprueba los resultados observables sin llamar modelos ni instalar paquetes.
    - Hooks `pre-commit` y `pre-merge-commit`: bloquean automáticamente secretos (`.env`, llaves privadas), archivos >50 MB, marcadores de conflicto y nodos OKF inválidos.
 4. **Skills modulares (`.agents/skills/`):**
    - `onboarding`: entrevista breve de bienvenida para personalizar el espacio en la primera sesión.
@@ -123,6 +124,36 @@ Los controles comprueban que los archivos históricos existan, sean regulares y
 no estén vacíos; la veracidad de la evidencia sigue requiriendo comprobación.
 Consulta la guía para el flujo completo de guardado, revisión y reapertura.
 
+## Intentos de ejecución y evaluación del agente
+
+El [registro de intentos y los escenarios de evaluación](docs/evaluaciones-e-intentos.md)
+permiten revisar qué acción se intentó, con qué agente y herramienta, y qué se
+observó. Cada intento conserva el contexto inicial y un informe vinculado a un
+punto de guardado. Sus desenlaces (`exito`, `fallo`, `interrumpido`) son independientes
+de los cuatro estados de tarea: no verifican criterios ni cierran tareas automáticamente.
+
+Guarda la tarea antes de `attempt-start ID "agente" "acción" "herramienta"`;
+guarda el inicio antes de trabajar y el informe antes de
+`attempt-finish ID I-000001 exito ruta punto "observación"`. Usa el identificador
+devuelto por el inicio. Consulta `attempts ID` para retomar. Un intento abierto
+impide terminar la tarea; cambiar el acuerdo ADD conserva el historial de intentos.
+
+Para evaluar a tu asistente con datos ficticios, prepara una carpeta nueva:
+
+```sh
+mkdir -p .tmp-test
+sh .agents/scripts/agent-eval.sh prepare referencia .tmp-test/eval-referencia
+# Abre esa copia con el agente y pídele que complete .agent-eval/PEDIDO.md.
+sh .agents/scripts/agent-eval.sh check .tmp-test/eval-referencia
+```
+
+Repite en carpetas nuevas con `evidencia` y `alcance`. La copia no tiene remotos
+ni contiene tus documentos o memoria. El evaluador original comprueba los archivos
+históricos y estados que dejó el agente; un PASS se limita a esas condiciones,
+y el contenido y la actuación completa siguen requiriendo revisión. Las pruebas
+de CI usan controles simulados y no evalúan un modelo. El gestor y el evaluador
+mantienen cero dependencias nuevas.
+
 ## Validación automatizada
 
 Para ejecutar la suite de pruebas deterministas en un entorno temporal aislado:
@@ -130,6 +161,7 @@ Para ejecutar la suite de pruebas deterministas en un entorno temporal aislado:
 ```sh
 sh .agents/tests/run-tests.sh
 sh .agents/tests/run-task-tests.sh
+sh .agents/tests/run-agent-eval-tests.sh
 ```
 
 Incluye regresiones para archivos ignorados que colisionan con una restauración,

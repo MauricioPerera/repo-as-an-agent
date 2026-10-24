@@ -44,6 +44,7 @@ Desde la carpeta principal del repositorio, ejecuta:
 ```sh
 sh .agents/tests/run-tests.sh
 sh .agents/tests/run-task-tests.sh
+sh .agents/tests/run-agent-eval-tests.sh
 ```
 
 La suite prepara una copia temporal aislada para probar los guardados, los borradores, las restauraciones y la validación de memoria. Al terminar debe indicar `FAIL=0` y `TEST_SUITE_VERDICT=PASS`. Un resultado de fallo devuelve un código de salida distinto de cero; revisa las líneas `[FAIL]` y sus detalles antes de enviar tu propuesta.
@@ -76,6 +77,19 @@ regulares, ediciones manuales, la versión preparada frente a la local, reapertu
 restauraciones y worktrees. Los casos usan archivos ficticios dentro de la copia
 temporal; no crees tareas de prueba en el template ni dependencias de Node/Python
 para el gestor. El flujo de uso está en [la guía ADD](docs/piloto-add.md).
+
+Las regresiones de intentos están en `.agents/tests/task-attempt-cases.sh`,
+incluidas por la suite del gestor. Conserva la separación entre desenlace de
+intento y estado de tarea, el contexto inicial guardado, el informe histórico,
+las versiones preparadas, las restauraciones y los borradores paralelos.
+
+`.agents/tests/run-agent-eval-tests.sh` comprueba el evaluador con entregas
+**simuladas**, positivas y negativas, en copias temporales con datos ficticios.
+Debe terminar con `AGENT_EVAL_TEST_VERDICT=PASS`. Se ejecuta en los tres sistemas
+en CI, sin llamadas a modelos. No presentes esos resultados como una medición
+del comportamiento de un agente real. Para esa evaluación, entrega a un agente
+el pedido de una copia preparada y aplica `check` desde el repositorio original,
+según la [guía de evaluaciones e intentos](docs/evaluaciones-e-intentos.md).
 
 ## Trabajar en la landing
 

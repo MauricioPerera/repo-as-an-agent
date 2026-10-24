@@ -11,13 +11,14 @@ TMP=$(mktemp -d "${TMPDIR:-/tmp}/agty-tasks.XXXXXX")
 cleanup() {
     [ -z "$EDIT_FILE" ] || rm -f "$EDIT_FILE"
     [ -z "$LOCK" ] || rmdir "$LOCK"
-    rm -f "$TMP/paths" "$TMP/log" "$TMP/selected" "$TMP/msg" "$TMP/artifacts"
+    rm -f "$TMP/paths" "$TMP/log" "$TMP/selected" "$TMP/msg" "$TMP/artifacts" "$TMP/attempts" "$TMP/attempt-task"
     rmdir "$TMP"
 }
 trap cleanup EXIT
 trap 'exit 1' HUP INT TERM
 fail() { printf 'TASK_STATUS=FAIL\nERROR=%s\n' "$1"; exit 1; }
 . "$SCRIPT_DIR/task-artifacts.sh"
+. "$SCRIPT_DIR/task-attempts.sh"
 valid_id() { printf '%s\n' "$1" | LC_ALL=C grep -Eq '^T-[0-9a-f]{12}$'; }
 require_text() {
     case "$1" in *'
@@ -62,6 +63,9 @@ Uso: sh .agents/scripts/tasks.sh <operación>
   unverify ID número
   agree ID ruta punto "qué se acordó y de dónde surge"
   deliver ID número ruta punto "qué se comprobó"
+  attempt-start ID "agente" "acción prevista" "herramienta"
+  attempt-finish ID I-000001 exito|fallo|interrumpido ruta punto "resultado observado"
+  attempts ID
   checkpoint ID "nota del punto de guardado"
   history ID [límite]
   lint
@@ -236,6 +240,48 @@ case "$COMMAND" in
             {print}
         ' "$FILE" > "$EDIT_FILE"
         finish_edit
+        ;;
+    attempt-start)
+        [ "$#" -eq 4 ] || fail "attempt-start requiere ID, agente, acción y herramienta"
+        require_text "$2"; require_text "$3"; require_text "$4"
+        lock_tasks
+        load_task "$1"
+        [ "$STATE" != terminada ] || fail "Reabre la tarea antes de iniciar otro intento"
+        [ -z "$(field attempt-open-id)" ] || fail "Termina o interrumpe el intento abierto antes de iniciar otro"
+        add_point HEAD
+        AT_BASE=$ADD_POINT
+        attempt_saved_task "$AT_BASE"
+        [ "$(git hash-object -- "$FILE")" = "$(git hash-object -- "$TMP/attempt-task")" ] ||
+            fail "Guarda la tarea actual antes de iniciar el intento para conservar su contexto"
+        AT_COUNT=$(field attempt-count)
+        [ "$AT_COUNT" -lt 999999 ] || fail "Se alcanzó el límite de intentos de esta tarea"
+        AT_ID=$(printf 'I-%06d' "$((AT_COUNT + 1))")
+        begin_edit
+        AT_ID=$AT_ID AT_AGENT=$2 AT_ACTION=$3 AT_TOOL=$4 AT_BASE=$AT_BASE AT_TIME=$(date -u '+%Y-%m-%dT%H:%M:%SZ') \
+            LC_ALL=C awk -v action=start -f "$SCRIPT_DIR/task-attempt-edit.awk" "$FILE" > "$EDIT_FILE"
+        finish_edit
+        printf 'ATTEMPT_ID=%s\nATTEMPT_OUTCOME=abierto\n' "$AT_ID"
+        ;;
+    attempt-finish)
+        [ "$#" -eq 6 ] || fail "attempt-finish requiere ID, intento, desenlace, ruta, punto y observación"
+        require_text "$4"; require_text "$5"; require_text "$6"
+        case "$3" in exito|fallo|interrumpido) ;; *) fail "Desenlace desconocido" ;; esac
+        lock_tasks
+        load_task "$1"
+        [ -n "$2" ] && [ "$2" = "$(field attempt-open-id)" ] || fail "Ese intento no está abierto en esta tarea"
+        AT_ID=$2
+        add_artifact "$4" "$5"
+        begin_edit
+        AT_ID=$AT_ID AT_OUTCOME=$3 AT_PATH=$4 AT_POINT=$ADD_POINT AT_NOTE=$6 AT_TIME=$(date -u '+%Y-%m-%dT%H:%M:%SZ') \
+            LC_ALL=C awk -v action=finish -f "$SCRIPT_DIR/task-attempt-edit.awk" "$FILE" > "$EDIT_FILE"
+        finish_edit
+        printf 'ATTEMPT_ID=%s\nATTEMPT_OUTCOME=%s\n' "$AT_ID" "$3"
+        ;;
+    attempts)
+        [ "$#" -eq 1 ] || fail "attempts requiere un ID"
+        load_task "$1"
+        printf 'ATTEMPT_LIST_STATUS=OK\nTASK_ID=%s\n' "$ID"
+        LC_ALL=C awk '/^## / {show=($0 == "## Intentos de ejecución")} show {print}' "$FILE"
         ;;
     checkpoint)
         [ "$#" -eq 2 ] || fail "checkpoint requiere ID y una nota"

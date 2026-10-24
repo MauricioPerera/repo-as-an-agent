@@ -35,6 +35,7 @@ add_validate() {
     LC_ALL=C awk -v expected_id="$ID" -v display="$FILE" -v field=artifacts -f "$SCRIPT_DIR/task-format.awk" "$1" > "$TMP/artifacts"
     ADD_TAB=$(printf '\t')
     while IFS="$ADD_TAB" read -r ADD_KIND ADD_PATH ADD_REF; do
+        case "$ADD_KIND" in attempt-*) continue ;; esac
         add_artifact "$ADD_PATH" "$ADD_REF"
         if [ "$ADD_KIND" != agreement ]; then
             git merge-base --is-ancestor "$ADD_AGREEMENT_POINT" "$ADD_REF" 2>/dev/null || fail "La evidencia debe ser del punto acordado o de uno posterior de su historial"
@@ -42,4 +43,5 @@ add_validate() {
             ADD_AGREEMENT_POINT=$ADD_REF
         fi
     done < "$TMP/artifacts"
+    attempt_validate "$1"
 }

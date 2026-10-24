@@ -60,6 +60,18 @@ comprobar de nuevo sus criterios antes de terminar.
 Consulta la [guía del piloto ADD](docs/piloto-add.md). El agente debe comprobar
 las evidencias: que exista un informe no demuestra por sí solo que sea correcto.
 
+### Para saber qué se intentó y probar a tu asistente
+
+Puedes pedir: *"Registra cada intento de esta tarea, la herramienta utilizada y
+lo que se pudo comprobar, incluyendo los fallos"*. El asistente guarda su contexto
+y relaciona el resultado con un informe y un punto de guardado. Un intento exitoso
+no da la tarea por terminada automáticamente; los cuatro estados se conservan.
+
+También puedes pedir: *"Prepara los escenarios ficticios para evaluar cómo respeta
+mi asistente las referencias y detecta evidencias insuficientes"*. Se realizan en
+una copia separada, sin tus documentos ni memoria. Consulta la
+[guía de evaluaciones e intentos](docs/evaluaciones-e-intentos.md).
+
 ## Carpetas que mantiene tu asistente (no necesitas tocarlas)
 
 * **`knowledge/`**: Es la memoria ordenada de tu asistente (escrita en archivos legibles por si algún día quieres consultarlos).

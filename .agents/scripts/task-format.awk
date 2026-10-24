@@ -6,6 +6,18 @@ function error(message) {
 function text(value) { return value ~ /[^[:space:]]/ && value != "-" }
 function metadata_value(line) { sub(/^[^:]+: /, "", line); return line }
 function point(value) { return value ~ /^[0-9a-f]+$/ && (length(value) == 40 || length(value) == 64) }
+function timestamp(value, year, month, day, days) {
+    if (value !~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]Z$/) return 0
+    year=substr(value, 1, 4)+0; month=substr(value, 6, 2)+0; day=substr(value, 9, 2)+0
+    days=31
+    if (month == 4 || month == 6 || month == 9 || month == 11) days=30
+    if (month == 2) days=28+(year % 400 == 0 || (year % 4 == 0 && year % 100 != 0))
+    return month >= 1 && month <= 12 && day >= 1 && day <= days &&
+        substr(value, 12, 2)+0 <= 23 && substr(value, 15, 2)+0 <= 59 && substr(value, 18, 2)+0 <= 59
+}
+function attempt_context(n) {
+    return av[n, "Base"] "\t" av[n, "Agente"] "\t" av[n, "Acción"] "\t" av[n, "Herramienta"] "\t" av[n, "Inicio"]
+}
 BEGIN { section = "header" }
 {
     sub(/\r$/, "")
@@ -29,6 +41,17 @@ BEGIN { section = "header" }
     if (section == "## Objetivo" && text($0)) objective++
     if (section == "## Resultado" && text($0)) result++
     if (section == "## Motivo del estado" && text($0)) reason++
+    if (section == "## Intentos de ejecución" && text($0)) {
+        if ($0 ~ /\t/) error("los campos de intento no admiten tabuladores")
+        if ($0 ~ /^### Intento I-[0-9]+$/ && length($3) == 8) {
+            attempts++
+            attempt_ids[attempts] = $3
+            if (substr($3, 3) + 0 != attempts) error("los intentos deben numerarse consecutivamente desde I-000001")
+        } else if (attempts && $0 ~ /^(Agente|Acción|Herramienta|Inicio|Base|Fin|Desenlace|Archivo|Punto|Observación): /) {
+            key = $0; sub(/: .*/, "", key)
+            av[attempts, key] = metadata_value($0); ac[attempts, key]++
+        } else error("intento de ejecución con formato inválido")
+    }
     if (section == "## Referencia acordada" && text($0)) {
         if ($0 ~ /^Archivo: /) { agreement_path = metadata_value($0); agreement_paths++ }
         else if ($0 ~ /^Punto: /) { agreement_point = metadata_value($0); agreement_points++ }
@@ -68,6 +91,25 @@ END {
     }
     if (state == "terminada" && !result) error("una tarea terminada requiere resultado")
     if (state == "bloqueada" && !reason) error("una tarea bloqueada requiere motivo")
+    if (headings["## Intentos de ejecución"] > 1) error("la sección de intentos debe ser única")
+    keys_count = split("Agente|Acción|Herramienta|Inicio|Base|Fin|Desenlace|Archivo|Punto|Observación", keys, "[|]")
+    for (n = 1; n <= attempts; n++) {
+        for (k = 1; k <= keys_count; k++)
+            if (ac[n, keys[k]] != 1) error("campo de intento ausente o repetido: " keys[k])
+        if (!text(av[n, "Agente"]) || !text(av[n, "Acción"]) || !text(av[n, "Herramienta"]) ||
+            !timestamp(av[n, "Inicio"]) || !point(av[n, "Base"])) error("inicio de intento incompleto")
+        outcome = av[n, "Desenlace"]
+        if (outcome == "abierto") {
+            open_attempts++
+            if (n != attempts || av[n, "Fin"] != "-" || av[n, "Archivo"] != "-" ||
+                av[n, "Punto"] != "-" || av[n, "Observación"] != "-") error("intento abierto con datos de cierre")
+        } else {
+            if (outcome != "exito" && outcome != "fallo" && outcome != "interrumpido") error("desenlace de intento desconocido")
+            if (!timestamp(av[n, "Fin"]) || av[n, "Fin"] < av[n, "Inicio"] || !text(av[n, "Archivo"]) ||
+                !point(av[n, "Punto"]) || !text(av[n, "Observación"])) error("cierre de intento incompleto")
+        }
+    }
+    if (open_attempts > 1 || (state == "terminada" && open_attempts)) error("hay un intento abierto: no se puede terminar")
     add = headings["## Referencia acordada"] || headings["## Evidencias de entrega"]
     if (add) {
         if (headings["## Referencia acordada"] != 1 || headings["## Evidencias de entrega"] != 1)
@@ -88,11 +130,28 @@ END {
     if (field == "state") print state
     else if (field == "title") print title
     else if (field == "criteria") print criteria
+    else if (field == "verified") { total=0; for (i=1; i<=criteria; i++) if (checked[i]) total++; print total }
     else if (field == "add") print add ? "yes" : "no"
     else if (field == "agreement" && add) print agreement_path "\t" agreement_point "\t" agreement_note
-    else if (field == "artifacts" && add) {
+    else if (field == "attempt-count") print attempts + 0
+    else if (field == "attempt-open-id") { if (open_attempts) print attempt_ids[attempts] }
+    else if (field == "attempt-context" || field == "attempt-open-context") {
+        for (n = 1; n <= attempts; n++)
+            if (attempt_ids[n] == attempt_id && (field == "attempt-context" || av[n, "Desenlace"] == "abierto")) print attempt_context(n)
+    }
+    else if (field == "attempts") {
+        for (n = 1; n <= attempts; n++)
+            print attempt_ids[n] "\t" av[n, "Base"] "\t" av[n, "Desenlace"] "\t" av[n, "Archivo"] "\t" av[n, "Punto"]
+    }
+    else if (field == "artifacts") {
+        if (add) {
         print "agreement\t" agreement_path "\t" agreement_point
         for (i = 1; i <= criteria; i++)
             if (deliveries[i]) print i "\t" delivery_path[i] "\t" delivery_point[i]
+        }
+        for (n = 1; n <= attempts; n++) {
+            print "attempt-base\t" expected_id "\t" av[n, "Base"]
+            if (av[n, "Desenlace"] != "abierto") print "attempt-proof\t" av[n, "Archivo"] "\t" av[n, "Punto"]
+        }
     }
 }

@@ -2,6 +2,24 @@
 
 Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
+## Pendiente de publicación
+
+### Añadido
+
+- Registro opcional de intentos por tarea: agente, acción, herramienta, inicio y fin,
+  contexto guardado y desenlace con informe histórico. Conserva los intentos al
+  cambiar un acuerdo y sus vínculos en el historial. Un intento abierto impide
+  terminar; su desenlace no cambia estados ni verifica criterios automáticamente.
+- Evaluador de comportamiento con tres escenarios aislados y datos ficticios:
+  respeto de la referencia, evidencia insuficiente y cambio de alcance. Comprueba
+  resultados observables mediante el evaluador original y las entregas guardadas,
+  sin copiar datos del usuario, llamar modelos ni añadir dependencias.
+- Regresiones de intentos, controles simulados correctos e incorrectos del evaluador
+  y ejecución de ambas suites en Linux, macOS y Windows mediante GitHub Actions.
+- [Guía de uso y límites](docs/evaluaciones-e-intentos.md), instrucciones para agentes
+  y documentación para usuarios y colaboradores. Se conservan los cuatro estados
+  y la compatibilidad con tareas anteriores.
+
 ## [v1.2.1] - 2026-10-23
 
 Guía visual del piloto ADD en la landing y acceso directo desde el README.

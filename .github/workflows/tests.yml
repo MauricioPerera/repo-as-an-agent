@@ -12,7 +12,7 @@ jobs:
   tests:
     name: Pruebas (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -29,6 +29,8 @@ jobs:
         run: sh .agents/tests/run-tests.sh
       - name: Ejecutar suite del gestor de tareas
         run: sh .agents/tests/run-task-tests.sh
+      - name: Probar el evaluador con controles simulados correctos e incorrectos
+        run: sh .agents/tests/run-agent-eval-tests.sh
 
   landing:
     name: Validar la landing
