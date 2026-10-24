@@ -183,6 +183,10 @@ en `tests/test_site.py`, ejecutadas por el mismo flujo. Las pruebas con Playwrig
 de `tests/browser/` comprueban los estados y el contenido del portapapeles en
 escritorio y móvil, incluidos los pedidos de tareas y `prompt.md`.
 
+La [propuesta de batería adversarial](docs/testing-adversarial.md) define 60
+escenarios para el motor, los datos, el agente y la web, con prioridades,
+evidencias y criterios de aprobación. Es una especificación pendiente de ejecutar.
+
 ## Landing y GitHub Pages
 
 La [landing pública](https://mauricioperera.github.io/repo-as-an-agent/) explica el
