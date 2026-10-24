@@ -2,6 +2,24 @@
 
 Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
+## Pendiente de publicación
+
+### Añadido
+
+- [Sección del observador adversarial de v1.4.0 en la landing](https://mauricioperera.github.io/repo-as-an-agent/#observador), con ejemplos públicos ficticios de fugas propias, cruzadas y externas, y una demostración interactiva que distingue PASS, FAIL y ERROR.
+- Recorrido visual del contrato externo, las capturas privadas y las huellas de evidencia, con ejemplos de alteraciones del contrato, del verificador y de los informes. Los límites del aislamiento, las capacidades omitidas y el alcance de INF-01 se muestran de forma visible.
+- Tres botones de copia para el pedido, la preparación/comprobación y la verificación de evidencias; enlaces a la guía, al catálogo adversarial y a v1.4.0. La página no ejecuta pruebas, modelos ni operaciones sobre archivos.
+
+### Actualizado
+
+- Navegación y acceso principal de la cabecera para destacar el observador. La última versión y su enlace siguen generándose automáticamente durante la publicación de Pages; las secciones anteriores conservan sus enlaces.
+- Guía técnica con el comando de la suite adversarial, resultados por plataforma y distinción entre pruebas del motor, controles simulados y evaluación de un modelo real.
+- Comprobación de publicación para mantener fuera los contratos, canarios y capturas privados. El motor y sus dependencias no cambian.
+
+### Verificación
+
+- **70 pruebas con Playwright**, incluidas **18 nuevas** para el observador en escritorio y móvil emulado, y **18 pruebas del sitio**, aprobadas localmente. La copia se contrasta con el portapapeles real; el diseño se comprueba entre **320 y 1280 px**, también con los comandos desplegados.
+
 ## [v1.4.0] - 2026-10-24
 
 Primera fase de la batería adversarial: observador de archivos en directorios

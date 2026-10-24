@@ -126,7 +126,7 @@ async function expectOutcome(page, key) {
 }
 
 test('v1.3.0 muestra los tres desenlaces con contexto y evidencia sin cerrar la tarea', async ({ page, isMobile }) => {
-  await activate(page, page.locator('.hero-feature'), isMobile);
+  await activate(page, page.locator('.site-header nav a[href="#evaluaciones"]'), isMobile);
   await expect(page).toHaveURL(/#evaluaciones$/);
   await expect(page.locator('#behavior-title')).toBeInViewport();
   await expect(page.locator('#evaluaciones .eyebrow')).toContainText('v1.3.0');
@@ -228,6 +228,141 @@ test('la sección v1.3.0 se adapta de 320 a 1280 px sin desbordamientos', async 
       await page.locator(`#attempt-tab-${outcome.key}`).click();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
       await expect(page.locator(`#attempt-${outcome.key} .attempt-evidence`)).toBeVisible();
+    }
+  }
+});
+
+const observerCases = [
+  { key: 'clean', panel: 'observer-clean', verdict: 'PASS', reason: 'OBSERVABLE_FILE_CONDITIONS_MET', anchor: 'observer-receipt' },
+  { key: 'leak', panel: 'observer-leak', verdict: 'FAIL', reason: 'CANARY_LEAK', anchor: 'observer-capture' },
+  { key: 'contract', panel: 'observer-contract-error', verdict: 'ERROR', reason: 'CONTRACT_INTEGRITY_ERROR', anchor: 'observer-contract' },
+];
+
+async function expectObserverCase(page, key) {
+  await expect(page.locator('[data-observer-case][aria-selected="true"]')).toHaveCount(1);
+  await expect(page.locator('.observer-panel:visible')).toHaveCount(1);
+  for (const sample of observerCases) {
+    await expect(page.locator(`#observer-tab-${sample.key}`)).toHaveAttribute('aria-selected', String(sample.key === key));
+    await expect(page.locator(`#observer-tab-${sample.key}`)).toHaveJSProperty('tabIndex', sample.key === key ? 0 : -1);
+    if (sample.key === key) await expect(page.locator(`#${sample.panel}`)).toBeVisible();
+    else await expect(page.locator(`#${sample.panel}`)).toBeHidden();
+  }
+}
+
+test('v1.4.0 destaca el observador y distingue PASS, FAIL y ERROR', async ({ page, isMobile }) => {
+  await activate(page, page.locator('.hero-feature'), isMobile);
+  await expect(page).toHaveURL(/#observador$/);
+  await expect(page.locator('#observer-title')).toBeInViewport();
+  await expect(page.locator('#observador .eyebrow')).toContainText('v1.4.0');
+  for (const sample of observerCases) {
+    await activate(page, page.locator(`#observer-tab-${sample.key}`), isMobile);
+    await expectObserverCase(page, sample.key);
+    await expect(page.locator(`#${sample.panel} .observer-verdict`)).toHaveText(sample.verdict);
+    await expect(page.locator(`#${sample.panel} .observer-reason`)).toHaveText(sample.reason);
+  }
+  await expect(page.locator('#observer-clean')).toContainText('No mide la actuación de un modelo.');
+  await expect(page.locator('#observer-contract-error')).toContainText('ERROR no es una aprobación.');
+  await expectSelected(page, 'pending');
+  await expectOutcome(page, 'success');
+});
+
+test('el observador permite navegar por teclado sin cambiar las otras demostraciones', async ({ page }) => {
+  await page.locator('#observer-tab-clean').focus();
+  for (const [key, selected] of [
+    ['ArrowRight', 'leak'], ['ArrowDown', 'contract'], ['ArrowRight', 'clean'],
+    ['ArrowLeft', 'contract'], ['Home', 'clean'], ['End', 'contract'],
+  ]) {
+    await page.keyboard.press(key);
+    await expectObserverCase(page, selected);
+    await expect(page.locator(`#observer-tab-${selected}`)).toBeFocused();
+  }
+  await expectSelected(page, 'pending');
+  await expectOutcome(page, 'success');
+});
+
+test('los tres canarios son ejemplos públicos ficticios con ubicaciones diferenciadas', async ({ page }) => {
+  await expect(page.locator('.observer-canaries article')).toHaveCount(3);
+  await expect(page.locator('.observer-canaries h4')).toHaveText(['Fuga propia', 'Fuga cruzada', 'Fuga externa']);
+  await expect(page.locator('.observer-canaries code')).toHaveText([
+    'ataque/.env.canario', 'valido/.env.canario', 'observador/contrato/canario-externo',
+  ]);
+  await expect(page.locator('.observer-demo-token')).toHaveText([
+    'CANARY-DEMO-ATAQUE', 'CANARY-DEMO-VALIDO', 'CANARY-DEMO-EXTERNO',
+  ]);
+  await expect(page.locator('.observer-demo-note')).toContainText('muestras públicas inventadas');
+  await expect(page.locator('.observer-demo-note')).toContainText('no lee archivos ni ejecuta pruebas o modelos');
+  await expect(page.locator('#observer-leak pre')).toContainText('[valor omitido]');
+});
+
+test('el observador muestra los límites de aislamiento e integridad y enlaza su documentación', async ({ page, isMobile }) => {
+  await activate(page, page.locator('.site-header nav a[href="#observador"]'), isMobile);
+  await expect(page).toHaveURL(/#observador$/);
+  await expect(page.locator('.observer-integrity dd code')).toHaveText([
+    'CONTRACT_INTEGRITY_ERROR', 'VERIFIER_INTEGRITY_ERROR', 'EVIDENCE_INTEGRITY_ERROR',
+  ]);
+  await expect(page.locator('.observer-integrity')).toContainText('integridad, no autoría');
+  await expect(page.locator('.observer-limits')).toBeVisible();
+  await expect(page.locator('.observer-isolation')).toHaveText('OS_ISOLATION=not_attested');
+  await expect(page.locator('.observer-limits')).toContainText('no configura una máquina virtual, permisos ni un cortafuegos');
+  await expect(page.locator('.observer-limits')).toContainText('512 entradas');
+  await expect(page.locator('.observer-limits')).toContainText('1 MiB');
+  await expect(page.locator('.observer-limits')).toContainText('8 MiB');
+  await expect(page.locator('.observer-limits')).toContainText('60 escenarios del catálogo siguen pendientes');
+  await expect(page.locator('.observer-test-summary')).toContainText('35 + 1 SKIP');
+  await expect(page.locator('.observer-links a').nth(0)).toHaveAttribute('href', /\/docs\/observador-adversarial\.md$/);
+  await expect(page.locator('.observer-links a').nth(1)).toHaveAttribute('href', /\/docs\/testing-adversarial\.md$/);
+  await expect(page.locator('.observer-links a').nth(2)).toHaveAttribute('href', /\/releases\/tag\/v1\.4\.0$/);
+});
+
+test('los ejemplos del observador conectan contrato, capturas y huellas externas', async ({ page, isMobile }) => {
+  await expect(page.locator('.observer-checkpoints > li')).toHaveCount(3);
+  await expect(page.locator('#observer-contract')).toContainText('CONTRACT_SEAL');
+  await expect(page.locator('#observer-capture')).toContainText('Detén las escrituras');
+  await expect(page.locator('#observer-receipt')).toContainText('EVIDENCE_SEAL');
+  for (const sample of observerCases) {
+    await activate(page, page.locator(`#observer-tab-${sample.key}`), isMobile);
+    await activate(page, page.locator(`#${sample.panel} a[href="#${sample.anchor}"]`), isMobile);
+    await expect(page).toHaveURL(new RegExp(`#${sample.anchor}$`));
+    await expect(page.locator(`#${sample.anchor}`)).toBeInViewport();
+  }
+});
+
+test('copia el pedido del observador con evidencias privadas y alcance explícito', async ({ page, isMobile }) => {
+  const expected = (await page.locator('#observer-request').textContent()).trim();
+  expect(expected).toContain('sin lanzar una campaña real de modelos');
+  expect(expected).toContain('fuera del alcance del evaluado');
+  expect(expected).toContain('capturas en privado');
+  await expectCopied(page, page.locator('[data-copy-target="observer-request"]'), expected, isMobile);
+});
+
+test('copia la preparación y comprobación con una huella que conserva el operador', async ({ page, isMobile }) => {
+  await activate(page, page.locator('.observer-technical > summary'), isMobile);
+  const expected = (await page.locator('#observer-prepare-code').textContent()).trim();
+  expect(expected).toContain('adversarial.sh prepare .tmp-test/ensayo/agente .tmp-test/ensayo/observador');
+  expect(expected).toContain('HUELLA_CONTRATO_CONSERVADA');
+  expect(expected).toContain('no scripts de las copias');
+  expect(expected.indexOf('adversarial.sh prepare')).toBeLessThan(expected.indexOf('adversarial.sh check'));
+  expect(expected.indexOf('detén sus escrituras')).toBeLessThan(expected.indexOf('adversarial.sh check'));
+  await expectCopied(page, page.getByRole('button', { name: 'Copiar comandos del observador', exact: true }), expected, isMobile);
+});
+
+test('copia la verificación de evidencia sin confundir integridad con una campaña aprobada', async ({ page, isMobile }) => {
+  await activate(page, page.locator('.observer-technical > summary'), isMobile);
+  const expected = (await page.locator('#observer-evidence-code').textContent()).trim();
+  expect(expected).toContain('adversarial.sh verify-evidence RUTA_EVIDENCE HUELLA_EVIDENCIA_CONSERVADA');
+  expect(expected).toContain('EVIDENCE_SEAL aparte');
+  expect(expected).toContain('solo acredita integridad de archivos');
+  await expectCopied(page, page.getByRole('button', { name: 'Copiar verificación de evidencia', exact: true }), expected, isMobile);
+});
+
+test('el observador se adapta de 320 a 1280 px con sus comandos desplegados', async ({ page }) => {
+  await page.locator('.observer-technical > summary').click();
+  for (const width of [320, 390, 680, 900, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const sample of observerCases) {
+      await page.locator(`#observer-tab-${sample.key}`).click();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      await expect(page.locator(`#${sample.panel} .observer-reason`)).toBeVisible();
     }
   }
 });

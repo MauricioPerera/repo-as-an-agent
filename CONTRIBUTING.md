@@ -169,6 +169,11 @@ sus vínculos a los cuatro momentos de guardado, los tres escenarios del evaluad
 y los pedidos y comandos copiables de la sección de v1.3.0. El diseño se comprueba
 entre 320 y 1280 px. Los ejemplos de la landing son ilustrativos: no ejecutan un
 agente ni modifican archivos o tareas reales.
+La sección del observador de v1.4.0 añade ejemplos ficticios de los tres canarios,
+PASS/FAIL/ERROR, navegación del contrato y las evidencias, tres botones de copia
+y límites de aislamiento visibles. Conserva la separación entre una demostración
+web, los controles simulados de infraestructura y una campaña real de agentes.
+Los contratos, canarios y capturas de los ensayos permanecen fuera de `_site/`.
 Comprueban el contenido real copiado por todos los botones, incluidos los ejemplos
 técnicos y `prompt.md`, y las alternativas cuando el navegador deniega la copia.
 Se ejecutan en serie para evitar interferencias entre portapapeles.

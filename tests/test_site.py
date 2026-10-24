@@ -30,6 +30,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn("NUEVO EN v1.1.0", html)
         self.assertIn("NUEVO EN v1.2.0", html)
         self.assertIn("NUEVO EN v1.3.0", html)
+        self.assertIn("NUEVO EN v1.4.0", html)
         self.assertIn("EVALÚA Y CONSERVA", html)
 
     def test_copy_without_releases_links_to_its_own_releases(self):
@@ -146,12 +147,15 @@ class LandingTests(unittest.TestCase):
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_bytes((ROOT / source).read_bytes())
             for private in ("workspace/private.txt", "knowledge/private.md", ".env", "site/private.txt",
-                            "tests/browser/node_modules/example/index.js", "tests/browser/test-results/trace.zip"):
+                            "tests/browser/node_modules/example/index.js", "tests/browser/test-results/trace.zip",
+                            ".tmp-test/ensayo/observador/contrato/canario-externo",
+                            ".tmp-test/ensayo/observador/ejecuciones/informe.md"):
                 path = root / private
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("NO PUBLICAR", encoding="utf-8")
             output = site.build(root, repository="owner/repo", release=RELEASE)
             self.assertEqual({path.name for path in output.iterdir()}, set(site.PUBLIC_FILES) | {".nojekyll"})
+            self.assertNotIn(b"NO PUBLICAR", b"".join(path.read_bytes() for path in output.iterdir()))
             self.assertEqual((output / "prompt.md").read_bytes(), (root / "prompt.md").read_bytes())
             self.assertIn('/releases/tag/v9.4.2"', (output / "index.html").read_text(encoding="utf-8"))
 
