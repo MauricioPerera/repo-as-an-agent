@@ -2,7 +2,11 @@
 
 Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
-## Pendiente de publicación
+## [v1.4.0] - 2026-10-24
+
+Primera fase de la batería adversarial: observador de archivos en directorios
+separados, canarios ficticios y evidencias verificables desde un contrato externo.
+Conserva los cuatro estados del gestor, sin dependencias nuevas.
 
 ### Añadido
 
@@ -14,6 +18,17 @@ Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
   integrados en GitHub Actions sin paquetes nuevos. Guía de uso, límites y
   correspondencia con el plan adversarial; los 60 escenarios y las campañas
   reales de agentes siguen pendientes.
+- Comandos `prepare`, `check` y `verify-evidence` en `adversarial.sh`, con capturas
+  independientes, fechas UTC, punto base del motor y huellas conservadas por el
+  observador. Detectan fugas de los canarios propios, cruzados y externos,
+  alteraciones del contrato, del verificador y de las evidencias, y resultados
+  falsamente anunciados como PASS. Un control válido incorrecto produce ERROR.
+- Exclusión de los directorios generados de los guardados habituales, comprobación
+  de la raíz común y conservación privada de los diagnósticos originales de las
+  herramientas. Las capturas no se suben automáticamente a GitHub ni a Pages.
+- [Guía del observador y sus límites](docs/observador-adversarial.md) y
+  [catálogo de 60 escenarios adversariales](docs/testing-adversarial.md), con
+  controles válidos, prioridades, evidencias y criterios de aceptación.
 - [Sección de evaluaciones e intentos de v1.3.0 en la landing](https://mauricioperera.github.io/repo-as-an-agent/#evaluaciones), con ejemplos interactivos de `exito`, `fallo` e `interrumpido`, sus observaciones, informes y vínculos al contexto y a la evidencia guardada. Los desenlaces conservan la separación respecto a los cuatro estados de tarea.
 - Diagrama de los cuatro momentos de guardado: contexto, inicio del intento, informe con el intento abierto y desenlace. Tres ejemplos de evaluación explican el respeto de la referencia, la evidencia insuficiente y el cambio de alcance, con sus resultados observables y límites.
 - Cuatro botones de copia para pedidos y comandos de intentos y evaluación, con acceso a la guía y a v1.3.0. Pruebas de navegación por teclado, vínculos históricos ilustrativos, portapapeles y adaptación entre 320 y 1280 px en escritorio y móvil emulado.
@@ -23,13 +38,34 @@ Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 - Cabecera, navegación y acceso principal para destacar las evaluaciones e intentos; se conserva la última versión y su enlace generados automáticamente durante la publicación de Pages.
 - Resumen de las pruebas del motor: 158 comprobaciones por sistema. La documentación distingue los 18 controles simulados del evaluador de la evaluación de un agente real.
 - Validación del sitio para detectar destinos inexistentes o vacíos en botones de copia y controles de paneles. El motor y el gestor conservan sus requisitos y dependencias.
+- Enlace directo del README a la sección visual de evaluaciones e intentos, e
+  instrucciones de uso del observador para usuarios, agentes y colaboradores.
 
 ### Verificación
 
 - Suite de **36 controles del observador adversarial**, con positivos y negativos
-  simulados. Las capacidades de archivos no disponibles se enumeran como SKIP,
-  sin acreditarlas como pruebas aprobadas ni evaluación de un modelo.
-- **52 pruebas con Playwright**, incluidas **18 nuevas**, y **18 pruebas del sitio**, aprobadas localmente. Los botones se contrastan con el contenido real del portapapeles y el diseño se comprueba entre **320 y 1280 px**.
+  simulados: **36 aprobados en Linux**, **36 en macOS** y **35 en Windows**, con
+  **un SKIP** para enlaces simbólicos no disponibles en ese entorno. Los controles
+  de canarios, contrato, verificador y evidencias pasan en los tres sistemas.
+- **158 comprobaciones existentes por sistema**: 38 generales, 102 del gestor y
+  18 del evaluador, aprobadas en Linux, macOS y Windows.
+- **52 pruebas con Playwright**, incluidas **18 nuevas**, y **18 pruebas del sitio**,
+  aprobadas en GitHub Actions. Los botones se contrastan con el contenido real del
+  portapapeles y el diseño se comprueba entre **320 y 1280 px**.
+
+### Límites del aislamiento
+
+- Un PASS acredita las condiciones observables de archivos de INF-01; no demuestra
+  aislamiento del sistema operativo, observación de llamadas o ausencia de efectos
+  externos. La herramienta informa `OS_ISOLATION=not_attested` y no ejecuta modelos.
+- El comando confiable y las huellas deben quedar fuera del alcance del evaluado.
+  Las huellas comprueban integridad, no autoría. Un agente hostil real requiere un
+  entorno externo con permisos y observación independientes.
+- Las capturas exigen detener las escrituras. Cada árbol admite hasta 512 entradas,
+  1 MiB por archivo y 8 MiB en total; superar un límite devuelve ERROR. Estos límites
+  no son una contención general de CPU, memoria, procesos o red.
+- Los controles simulados y los SKIP no acreditan campañas reales ni los 60
+  escenarios del catálogo. Se mantienen los cuatro estados y cero paquetes nuevos.
 
 ## [v1.3.0] - 2026-10-24
 
