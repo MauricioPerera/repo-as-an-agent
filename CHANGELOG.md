@@ -2,14 +2,24 @@
 
 Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
-## Pendiente de publicación
+## [v1.3.0] - 2026-10-24
+
+Evaluaciones observables del comportamiento del agente y registro de intentos
+de ejecución con contexto, desenlaces y evidencias históricas recuperables.
 
 ### Añadido
 
-- Registro opcional de intentos por tarea: agente, acción, herramienta, inicio y fin,
-  contexto guardado y desenlace con informe histórico. Conserva los intentos al
-  cambiar un acuerdo y sus vínculos en el historial. Un intento abierto impide
-  terminar; su desenlace no cambia estados ni verifica criterios automáticamente.
+- Registro opcional de intentos por tarea mediante `attempt-start`, `attempt-finish`
+  y `attempts`: agente, acción, herramienta, inicio y fin en UTC y contexto guardado.
+  Cada intento finaliza con `exito`, `fallo` o `interrumpido` y un informe histórico.
+  Un intento abierto impide terminar la tarea; su desenlace no cambia estados ni
+  verifica criterios automáticamente. Los reintentos conservan los registros anteriores.
+- Evidencias vinculadas a puntos de guardado inmutables que contienen el informe
+  y el inicio original del intento. Se rechazan archivos inexistentes, puntos
+  anteriores al inicio y contextos incompatibles. El historial incluye los puntos
+  de los intentos, también sin asociación explícita; las restauraciones con respaldo
+  y los borradores paralelos conservan los registros. Cambiar el acuerdo ADD mantiene
+  los intentos con su contexto original.
 - Evaluador de comportamiento con tres escenarios aislados y datos ficticios:
   respeto de la referencia, evidencia insuficiente y cambio de alcance. Comprueba
   resultados observables mediante el evaluador original y las entregas guardadas,
@@ -19,6 +29,21 @@ Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 - [Guía de uso y límites](docs/evaluaciones-e-intentos.md), instrucciones para agentes
   y documentación para usuarios y colaboradores. Se conservan los cuatro estados
   y la compatibilidad con tareas anteriores.
+
+### Verificación y compatibilidad
+
+- **102 pruebas del gestor**, incluidas **28 del registro de intentos**, y **18 controles
+  del evaluador** con respuestas simuladas correctas e incorrectas.
+- **158 comprobaciones del motor por sistema**: 38 generales, 102 del gestor y 18
+  del evaluador, aprobadas en Linux, macOS y Windows. Además, **16 pruebas de la
+  landing** y **34 con Playwright** en escritorio y móvil emulado.
+- Se mantienen los estados **pendiente**, **en curso**, **bloqueada** y **terminada**,
+  el piloto ADD y las tareas anteriores, con cero dependencias nuevas.
+
+Los controles de CI verifican la infraestructura con resultados simulados. Para
+evaluar a un agente real, se le entrega el pedido de cada escenario y se comprueban
+sus resultados desde el evaluador original. La existencia de un informe no certifica
+la veracidad de su contenido ni toda la actuación del agente.
 
 ## [v1.2.1] - 2026-10-23
 
