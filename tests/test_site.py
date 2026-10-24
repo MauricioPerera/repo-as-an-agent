@@ -29,7 +29,8 @@ class ReleaseTests(unittest.TestCase):
         # The introduction version of the task feature is historical content.
         self.assertIn("NUEVO EN v1.1.0", html)
         self.assertIn("NUEVO EN v1.2.0", html)
-        self.assertIn("AHORA CON ADD", html)
+        self.assertIn("NUEVO EN v1.3.0", html)
+        self.assertIn("EVALÚA Y CONSERVA", html)
 
     def test_copy_without_releases_links_to_its_own_releases(self):
         html = site.render_release(self.source_html(), "otra-persona/mi-copia")
@@ -108,6 +109,22 @@ class LandingTests(unittest.TestCase):
         files["index.html"] += b'<a href="#missing">Missing</a>'
         with self.assertRaisesRegex(ValueError, "Ancla inexistente"):
             site.validate(files)
+
+    def test_missing_copy_or_panel_target_is_rejected(self):
+        for attribute in ("data-copy-target", "aria-controls"):
+            with self.subTest(attribute=attribute):
+                files = self.public_files()
+                files["index.html"] += f'<button {attribute}="missing">Control</button>'.encode()
+                with self.assertRaisesRegex(ValueError, "Destino de control inexistente"):
+                    site.validate(files)
+
+    def test_empty_control_target_is_rejected(self):
+        for attribute in ("data-copy-target", "aria-controls"):
+            with self.subTest(attribute=attribute):
+                files = self.public_files()
+                files["index.html"] += f'<button {attribute}="">Control</button>'.encode()
+                with self.assertRaisesRegex(ValueError, "Destino de control vacío"):
+                    site.validate(files)
 
     def test_duplicate_id_is_rejected(self):
         files = self.public_files()

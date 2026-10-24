@@ -149,6 +149,14 @@
     });
   });
 
+  const attemptButtons = [...document.querySelectorAll("[data-attempt-outcome]")];
+  enableTabs(attemptButtons, (active) => {
+    selectTab(attemptButtons, active);
+    attemptButtons.forEach((button) => {
+      byId(button.getAttribute("aria-controls")).hidden = button !== active;
+    });
+  });
+
   const narrowScreen = window.matchMedia("(max-width: 680px)");
   const updateTabOrientation = () => {
     document.querySelector(".demo-tabs").setAttribute("aria-orientation", narrowScreen.matches ? "horizontal" : "vertical");

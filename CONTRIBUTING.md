@@ -111,6 +111,8 @@ Las pruebas de la landing están en `tests/test_site.py` y también se ejecutan 
 GitHub Actions. Si agregas recursos públicos, inclúyelos explícitamente en
 `PUBLIC_FILES` de `scripts/build-site.py`. El artefacto `_site/` debe contener solo
 la landing y el prompt; conserva fuera los documentos y la memoria del usuario.
+El constructor comprueba también los destinos de los botones de copia y los
+paneles enlazados mediante `aria-controls`; actualiza sus identificadores juntos.
 El flujo de Pages publica desde `main` después de validar y construir el sitio.
 También se ejecuta al publicar una release: solicita otra ejecución desde la rama
 predeterminada y consulta la última release estable mediante `--fetch-release`.
@@ -152,6 +154,11 @@ solo expone los archivos públicos y prueba la ruta `/repo-as-an-agent/`.
 Los proyectos `escritorio` (1280 × 900) y `movil` (390 × 844, con emulación táctil)
 verifican los cuatro estados, criterios pendientes y verificados, motivo de bloqueo,
 evidencia y resultado de cierre, navegación por teclado y ausencia de desbordamiento.
+Cubren también los tres desenlaces de intento (`exito`, `fallo`, `interrumpido`),
+sus vínculos a los cuatro momentos de guardado, los tres escenarios del evaluador
+y los pedidos y comandos copiables de la sección de v1.3.0. El diseño se comprueba
+entre 320 y 1280 px. Los ejemplos de la landing son ilustrativos: no ejecutan un
+agente ni modifican archivos o tareas reales.
 Comprueban el contenido real copiado por todos los botones, incluidos los ejemplos
 técnicos y `prompt.md`, y las alternativas cuando el navegador deniega la copia.
 Se ejecutan en serie para evitar interferencias entre portapapeles.

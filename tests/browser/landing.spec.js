@@ -83,7 +83,7 @@ test('las pestañas funcionan con flechas, Inicio y Fin', async ({ page }) => {
 });
 
 test('el piloto ADD conecta referencia, evidencias y sus puntos de guardado', async ({ page, isMobile }) => {
-  await activate(page, page.locator('.hero-feature'), isMobile);
+  await activate(page, page.locator('.site-header nav a[href="#add"]'), isMobile);
   await expect(page).toHaveURL(/#add$/);
   await expect(page.locator('#add-title')).toBeInViewport();
   await expect(page.locator('#add .eyebrow')).toContainText('v1.2.0');
@@ -102,6 +102,133 @@ test('el piloto ADD conecta referencia, evidencias y sus puntos de guardado', as
     await expect(page).toHaveURL(new RegExp(`#add-save-${key}$`));
     await expect(page.locator(`#add-save-${key}`)).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  }
+});
+
+const outcomes = [
+  { key: 'success', label: 'exito', proof: 'revision-cifras.md', observation: 'Diferencia: 0.' },
+  { key: 'failure', label: 'fallo', proof: 'fallo-de-acceso.md', observation: 'No se pudo contrastar el total' },
+  { key: 'interrupted', label: 'interrumpido', proof: 'revision-parcial.md', observation: 'total pendiente de comprobar' },
+];
+
+async function expectOutcome(page, key) {
+  await expect(page.locator('[data-attempt-outcome][aria-selected="true"]')).toHaveCount(1);
+  await expect(page.locator('.attempt-panel:visible')).toHaveCount(1);
+  await expect(page.locator(`#attempt-tab-${key}`)).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator(`#attempt-tab-${key}`)).toHaveJSProperty('tabIndex', 0);
+  for (const outcome of outcomes) {
+    if (outcome.key === key) await expect(page.locator(`#attempt-${key}`)).toBeVisible();
+    else {
+      await expect(page.locator(`#attempt-${outcome.key}`)).toBeHidden();
+      await expect(page.locator(`#attempt-tab-${outcome.key}`)).toHaveAttribute('tabindex', '-1');
+    }
+  }
+}
+
+test('v1.3.0 muestra los tres desenlaces con contexto y evidencia sin cerrar la tarea', async ({ page, isMobile }) => {
+  await activate(page, page.locator('.hero-feature'), isMobile);
+  await expect(page).toHaveURL(/#evaluaciones$/);
+  await expect(page.locator('#behavior-title')).toBeInViewport();
+  await expect(page.locator('#evaluaciones .eyebrow')).toContainText('v1.3.0');
+  await expectOutcome(page, 'success');
+  for (const outcome of outcomes) {
+    await activate(page, page.locator(`#attempt-tab-${outcome.key}`), isMobile);
+    await expectOutcome(page, outcome.key);
+    const panel = page.locator(`#attempt-${outcome.key}`);
+    await expect(panel.locator('.attempt-badge')).toHaveText(outcome.label);
+    await expect(panel.locator('.attempt-fields')).toContainText('Herramienta');
+    await expect(panel.locator('.attempt-fields')).toContainText('UTC');
+    await expect(panel.locator('.attempt-fields a')).toHaveAttribute('href', '#attempt-save-context');
+    await expect(panel.locator('.attempt-evidence code')).toHaveText(`workspace/entregables/${outcome.proof}`);
+    await expect(panel.locator('.attempt-evidence')).toContainText(outcome.observation);
+    await expect(panel.locator('.attempt-task-rule')).toContainText('La tarea sigue en curso.');
+    await expect(page.locator('[data-task-state]')).toHaveCount(4);
+  }
+});
+
+test('los desenlaces permiten navegación por teclado sin mezclar estados de tarea', async ({ page }) => {
+  await page.locator('#attempt-tab-success').focus();
+  for (const [key, selected] of [
+    ['ArrowRight', 'failure'], ['ArrowDown', 'interrupted'], ['ArrowRight', 'success'],
+    ['ArrowLeft', 'interrupted'], ['Home', 'success'], ['End', 'interrupted'],
+  ]) {
+    await page.keyboard.press(key);
+    await expectOutcome(page, selected);
+    await expect(page.locator(`#attempt-tab-${selected}`)).toBeFocused();
+  }
+  await expectSelected(page, 'pending');
+});
+
+test('cada evidencia del intento enlaza a su contexto y punto histórico', async ({ page, isMobile }) => {
+  await expect(page.locator('.attempt-checkpoints > li')).toHaveCount(4);
+  await expect(page.locator('#attempt-save-evidence')).toContainText('registro original abierto');
+  await expect(page.locator('#attempt-save-outcome')).toContainText('vínculo al informe');
+  for (const outcome of outcomes) {
+    await activate(page, page.locator(`#attempt-tab-${outcome.key}`), isMobile);
+    for (const part of ['context', 'evidence']) {
+      await activate(page, page.locator(`#attempt-${outcome.key} a[href="#attempt-save-${part}"]`), isMobile);
+      await expect(page).toHaveURL(new RegExp(`#attempt-save-${part}$`));
+      await expect(page.locator(`#attempt-save-${part}`)).toBeInViewport();
+    }
+  }
+});
+
+test('las evaluaciones explican sus tres escenarios, límites y documentación', async ({ page, isMobile }) => {
+  await activate(page, page.locator('.site-header nav a[href="#evaluaciones"]'), isMobile);
+  await expect(page).toHaveURL(/#evaluaciones$/);
+  await expect(page.locator('.evaluation-case-id')).toHaveText(['referencia', 'evidencia', 'alcance']);
+  await expect(page.locator('.evaluation-cases article')).toHaveCount(3);
+  await expect(page.locator('.evaluation-cases article').nth(1)).toContainText('criterio pendiente');
+  await expect(page.locator('.evaluation-cases article').nth(2)).toContainText('4 unidades');
+  await expect(page.locator('.evaluation-limit')).toContainText('respuestas simuladas');
+  await expect(page.locator('.evaluation-limit')).toContainText('no puntúan un modelo real');
+  await expect(page.locator('.behavior-links a').first()).toHaveAttribute('href', /\/docs\/evaluaciones-e-intentos\.md$/);
+  await expect(page.locator('.behavior-links a').last()).toHaveAttribute('href', /\/releases\/tag\/v1\.3\.0$/);
+});
+
+for (const kind of ['attempt', 'evaluation']) {
+  test(`copia el pedido de ${kind === 'attempt' ? 'intentos' : 'evaluación'}`, async ({ page, isMobile }) => {
+    const expected = (await page.locator(`#${kind}-request`).textContent()).trim();
+    expect(expected.length).toBeGreaterThan(200);
+    expect(expected).toContain('punto');
+    await expectCopied(page, page.locator(`[data-copy-target="${kind}-request"]`), expected, isMobile);
+  });
+}
+
+test('copia el flujo de intentos con inicio e informe guardados antes del desenlace', async ({ page, isMobile }) => {
+  await activate(page, page.locator('.behavior-technical > summary'), isMobile);
+  const expected = (await page.locator('#attempt-code').textContent()).trim();
+  expect(expected).toContain('tasks.sh attempt-start');
+  expect(expected).toContain('tasks.sh attempt-finish T-123456789abc I-000001 exito');
+  expect(expected).toContain('exito, fallo o interrumpido');
+  expect(expected.indexOf('Guardar el contexto actual')).toBeLessThan(expected.indexOf('tasks.sh attempt-start'));
+  expect(expected.indexOf('Guardar el inicio antes de trabajar')).toBeLessThan(expected.indexOf('Realiza la comprobación'));
+  expect(expected.indexOf('Guardar el informe del intento')).toBeLessThan(expected.indexOf('tasks.sh attempt-finish'));
+  expect(expected.indexOf('tasks.sh attempt-finish')).toBeLessThan(expected.indexOf('Guardar el desenlace del intento'));
+  expect(expected).toContain('tasks.sh history');
+  await expectCopied(page, page.getByRole('button', { name: 'Copiar ejemplo técnico de intentos', exact: true }), expected, isMobile);
+});
+
+test('copia la evaluación con preparación, pedido al agente y comprobación posterior', async ({ page, isMobile }) => {
+  await activate(page, page.locator('.behavior-technical > summary'), isMobile);
+  const expected = (await page.locator('#evaluation-code').textContent()).trim();
+  expect(expected).toContain('agent-eval.sh prepare referencia .tmp-test/eval-referencia');
+  expect(expected).toContain('.agent-eval/PEDIDO.md');
+  expect(expected).toContain('agent-eval.sh check .tmp-test/eval-referencia');
+  expect(expected.indexOf('agent-eval.sh prepare')).toBeLessThan(expected.indexOf('.agent-eval/PEDIDO.md'));
+  expect(expected.indexOf('.agent-eval/PEDIDO.md')).toBeLessThan(expected.indexOf('agent-eval.sh check'));
+  expect(expected).toContain('evidencia y alcance');
+  await expectCopied(page, page.getByRole('button', { name: 'Copiar comandos de evaluación', exact: true }), expected, isMobile);
+});
+
+test('la sección v1.3.0 se adapta de 320 a 1280 px sin desbordamientos', async ({ page }) => {
+  for (const width of [320, 390, 680, 900, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const outcome of outcomes) {
+      await page.locator(`#attempt-tab-${outcome.key}`).click();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      await expect(page.locator(`#attempt-${outcome.key} .attempt-evidence`)).toBeVisible();
+    }
   }
 });
 

@@ -2,6 +2,24 @@
 
 Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
+## Pendiente de publicación
+
+### Añadido
+
+- [Sección de evaluaciones e intentos de v1.3.0 en la landing](https://mauricioperera.github.io/repo-as-an-agent/#evaluaciones), con ejemplos interactivos de `exito`, `fallo` e `interrumpido`, sus observaciones, informes y vínculos al contexto y a la evidencia guardada. Los desenlaces conservan la separación respecto a los cuatro estados de tarea.
+- Diagrama de los cuatro momentos de guardado: contexto, inicio del intento, informe con el intento abierto y desenlace. Tres ejemplos de evaluación explican el respeto de la referencia, la evidencia insuficiente y el cambio de alcance, con sus resultados observables y límites.
+- Cuatro botones de copia para pedidos y comandos de intentos y evaluación, con acceso a la guía y a v1.3.0. Pruebas de navegación por teclado, vínculos históricos ilustrativos, portapapeles y adaptación entre 320 y 1280 px en escritorio y móvil emulado.
+
+### Actualizado
+
+- Cabecera, navegación y acceso principal para destacar las evaluaciones e intentos; se conserva la última versión y su enlace generados automáticamente durante la publicación de Pages.
+- Resumen de las pruebas del motor: 158 comprobaciones por sistema. La documentación distingue los 18 controles simulados del evaluador de la evaluación de un agente real.
+- Validación del sitio para detectar destinos inexistentes o vacíos en botones de copia y controles de paneles. El motor y el gestor conservan sus requisitos y dependencias.
+
+### Verificación
+
+- **52 pruebas con Playwright**, incluidas **18 nuevas**, y **18 pruebas del sitio**, aprobadas localmente. Los botones se contrastan con el contenido real del portapapeles y el diseño se comprueba entre **320 y 1280 px**.
+
 ## [v1.3.0] - 2026-10-24
 
 Evaluaciones observables del comportamiento del agente y registro de intentos

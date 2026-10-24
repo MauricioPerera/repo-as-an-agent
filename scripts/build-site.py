@@ -73,7 +73,7 @@ def render_release(html, repository, release=None):
     slot = (
         '<!-- release:start --><a class="version-pill" id="latest-release" '
         f'href="{escape(url, quote=True)}"><span class="status-dot" aria-hidden="true"></span> '
-        f'AHORA CON ADD <span class="pill-version">{escape(label)} ↗</span></a><!-- release:end -->'
+        f'EVALÚA Y CONSERVA <span class="pill-version">{escape(label)} ↗</span></a><!-- release:end -->'
     )
     if len(RELEASE_SLOT.findall(html)) != 1:
         raise ValueError("La cabecera debe contener un único espacio para la versión automática.")
@@ -85,6 +85,7 @@ class Page(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.ids = set()
         self.references = []
+        self.controls = []
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
@@ -97,6 +98,12 @@ class Page(HTMLParser):
         for attribute in ("href", "src"):
             if attribute in attrs:
                 self.references.append(attrs[attribute])
+        for attribute in ("data-copy-target", "aria-controls"):
+            if attribute in attrs:
+                targets = attrs[attribute].split() if attribute == "aria-controls" else [attrs[attribute]]
+                if not targets or not all(targets):
+                    raise ValueError(f"Destino de control vacío: {attribute}")
+                self.controls.extend(targets)
 
 
 def check_reference(reference, files, ids):
@@ -119,6 +126,9 @@ def validate(files):
     page = Page()
     page.feed(files["index.html"].decode("utf-8"))
     page.close()
+    for target in page.controls:
+        if target not in page.ids:
+            raise ValueError(f"Destino de control inexistente: {target}")
     for reference in page.references:
         check_reference(reference, files, page.ids)
     css = files["styles.css"].decode("utf-8")
