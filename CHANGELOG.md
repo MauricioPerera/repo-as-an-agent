@@ -2,6 +2,34 @@
 
 Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
+## Pendiente de publicación
+
+### Añadido
+
+- Segunda fase adversarial priorizada con variantes de REC-06, ENT-01, ENT-03,
+  ENT-06, TAR-06, EVA-02 y EVA-04, controles válidos, fallos inducidos locales y trazabilidad
+  de las regresiones existentes de memoria, tareas, ADD e intentos.
+- Informes privados por escenario con códigos esperados y observados, fechas UTC,
+  punto base, huellas del motor y recibo externo. Verificación de integridad con
+  negativos para un informe alterado y un paquete autoconsistente sustituido.
+- Ejecución de la fase 2 y de los controles del recibo en la matriz de Linux,
+  macOS y Windows de GitHub Actions, sin paquetes nuevos.
+
+### Corregido
+
+- El control previo al guardado bloquea errores de lectura de tamaño o contenido
+  preparado en vez de interpretar el fallo como un archivo vacío o sin conflictos.
+- El evaluador usa un lector Git privado sin ejecutar configuración, filtros,
+  hooks ni reemplazos de la copia evaluada; rechaza metadatos enlazados y objetos
+  externos, y conserva el índice observado. Mantiene los controles válidos.
+- La preparación devuelve un punto base que puede conservarse externamente y
+  pasarse al evaluador para rechazar la sustitución del contrato o del historial.
+  El uso sin ese punto conserva compatibilidad e informa la procedencia no fijada.
+
+La cobertura es parcial y determinista: no acredita una campaña de agentes,
+aislamiento del sistema operativo ni todos los escenarios del catálogo. Se
+conservan los cuatro estados y cero dependencias nuevas.
+
 ## [v1.4.1] - 2026-10-24
 
 Guía visual del observador adversarial presentado en v1.4.0 y acceso directo

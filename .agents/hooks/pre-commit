@@ -15,8 +15,11 @@ cd "$REPO_ROOT"
 MAX_BYTES=52428800 # 50 MB
 BLOCK_ERRORS=0
 
-TMP_STAGED="${TMPDIR:-/tmp}/agty_staged_$$.txt"
-trap 'rm -f "$TMP_STAGED"' EXIT INT TERM
+TMP_GATE=$(mktemp -d "${TMPDIR:-/tmp}/agty-gate.XXXXXX")
+TMP_STAGED=$TMP_GATE/staged
+TMP_BLOB=$TMP_GATE/blob
+trap 'rm -f "$TMP_STAGED" "$TMP_BLOB"; rmdir "$TMP_GATE"' EXIT
+trap 'exit 1' HUP INT TERM
 
 # Incluir R (renombrados/movidos) y C (copiados) además de A y M
 git diff --cached --name-only --diff-filter=ACMR > "$TMP_STAGED"
@@ -37,7 +40,17 @@ while IFS= read -r STAGED_FILE || [ -n "$STAGED_FILE" ]; do
     esac
 
     # 2. Verificar tamaño del blob en staging
-    BLOB_SIZE=$(git cat-file -s ":$STAGED_FILE" 2>/dev/null || echo 0)
+    if ! BLOB_SIZE=$(git cat-file -s ":$STAGED_FILE" 2>/dev/null); then
+        echo "PRE_COMMIT_FAIL: No se pudo leer el tamaño preparado de '$STAGED_FILE'."
+        BLOCK_ERRORS=$((BLOCK_ERRORS + 1))
+        continue
+    fi
+    case "$BLOB_SIZE" in
+        ''|*[!0-9]*)
+            echo "PRE_COMMIT_FAIL: Tamaño preparado inválido para '$STAGED_FILE'."
+            BLOCK_ERRORS=$((BLOCK_ERRORS + 1))
+            continue ;;
+    esac
     if [ "$BLOB_SIZE" -gt "$MAX_BYTES" ]; then
         echo "PRE_COMMIT_FAIL: '$STAGED_FILE' supera el límite seguro de 50 MB ($BLOB_SIZE bytes)."
         BLOCK_ERRORS=$((BLOCK_ERRORS + 1))
@@ -45,11 +58,16 @@ while IFS= read -r STAGED_FILE || [ -n "$STAGED_FILE" ]; do
     fi
 
     # 3. Detectar marcadores de conflicto en el contenido preparado
-    if git show ":$STAGED_FILE" 2>/dev/null | awk '
+    if ! git show ":$STAGED_FILE" > "$TMP_BLOB" 2>/dev/null; then
+        echo "PRE_COMMIT_FAIL: No se pudo leer el contenido preparado de '$STAGED_FILE'."
+        BLOCK_ERRORS=$((BLOCK_ERRORS + 1))
+        continue
+    fi
+    if awk '
         /^<<<<<<< / { found=1; exit }
         /^>>>>>>> / { found=1; exit }
         END { exit !found }
-    '; then
+    ' "$TMP_BLOB"; then
         echo "PRE_COMMIT_FAIL: '$STAGED_FILE' contiene marcadores de conflicto sin resolver (<<<<<<< / >>>>>>>)."
         BLOCK_ERRORS=$((BLOCK_ERRORS + 1))
     fi

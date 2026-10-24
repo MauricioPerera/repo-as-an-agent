@@ -83,7 +83,9 @@ sh .agents/scripts/agent-eval.sh prepare referencia .tmp-test/eval-referencia
 `prepare` rechaza destinos existentes. Crea una copia sin remotos, con identidad
 local ficticia, instrucciones, scripts y datos inventados. No copia tus documentos
 ni tu memoria. Deja el pedido en `.agent-eval/PEDIDO.md` dentro de la copia y
-devuelve su ruta e identificador de tarea. Conserva la carpeta si falla una
+devuelve su ruta, identificador de tarea y `BASE_CHECKPOINT`. Conserva este punto
+inicial fuera del alcance del agente; no lo vuelvas a obtener de la copia una vez
+evaluada. Conserva la carpeta si falla una
 preparación para que puedas revisar el diagnóstico.
 
 Abre **esa copia** con el agente que quieras evaluar y pídele que lea y complete
@@ -91,7 +93,7 @@ Abre **esa copia** con el agente que quieras evaluar y pídele que lea y complet
 Al terminar, ejecuta desde el repositorio original:
 
 ```sh
-sh .agents/scripts/agent-eval.sh check .tmp-test/eval-referencia
+sh .agents/scripts/agent-eval.sh check .tmp-test/eval-referencia PUNTO_BASE_CONSERVADO
 ```
 
 Repite con `evidencia` y `alcance`, cada uno en una carpeta nueva. `check` usa el
@@ -100,6 +102,15 @@ el contenido de los informes. Exige el trabajo guardado y rechaza modificaciones
 de las instrucciones, los criterios o la infraestructura del escenario. Lee
 las entregas e informes en sus puntos históricos: corregir un archivo después
 no cambia una evidencia ya vinculada.
+
+Sustituye `PUNTO_BASE_CONSERVADO` por el `BASE_CHECKPOINT` de la preparación.
+Con ese argumento rechaza otro contrato o historial y devuelve
+`CONTRACT_ANCHOR=pinned`. El uso anterior sin el punto sigue disponible, pero
+declara `CONTRACT_ANCHOR=not_pinned` y no acredita la procedencia del contrato.
+El lector privado ignora configuración, filtros, hooks y referencias de reemplazo
+de la copia, rechaza metadatos enlazados y `alternates` externos, y conserva su
+índice. Detén las escrituras antes de comprobar. Consulta los controles y las
+limitaciones de la [segunda fase adversarial](adversarial-fase2.md).
 
 Un resultado correcto devuelve `AGENT_EVAL_STATUS=PASS`, escenario, tarea y punto
 evaluado. Un fallo devuelve `AGENT_EVAL_STATUS=FAIL`, diagnóstico y código de

@@ -1,6 +1,6 @@
 # Batería adversarial de Repo-as-an-Agent
 
-**Propuesta v0.1 · 2026-10-24 · catálogo de escenarios todavía sin ejecutar.**
+**Catálogo v0.2 · 2026-10-24 · cobertura determinista parcial, sin campaña real acreditada.**
 
 Referencia de partida: el punto de guardado
 [`9950241`](https://github.com/MauricioPerera/repo-as-an-agent/commit/995024130ef4134e97c77d4fc4c0516f4c945e4e).
@@ -13,6 +13,12 @@ La [infraestructura de la primera fase](observador-adversarial.md) está impleme
 como un observador de controles ficticios con canarios y evidencias. Sus pruebas
 validan esa infraestructura; no acreditan los 60 escenarios ni una campaña real
 de agentes. El catálogo original no es una lista de resultados aprobados.
+
+La [segunda fase priorizada](adversarial-fase2.md) implementa variantes de REC-06,
+ENT-01, ENT-03, ENT-06, TAR-06, EVA-02 y EVA-04, con controles válidos, evidencia privada
+y huellas. Reutiliza las regresiones de las siete familias del motor sin duplicar
+sus conteos. Su tabla distingue las variantes ejecutables y lo pendiente; no
+declara aprobados los 60 escenarios completos.
 
 El objetivo es intentar quebrar las garantías del proyecto y comprobar el
 resultado con evidencia independiente. Un error útil debe convertirse después
@@ -461,7 +467,9 @@ no demuestra una probabilidad nula de fallo ni resistencia universal.
 
 La fase 1 dispone de `adversarial.sh` y sus controles de infraestructura INF-01,
 con el alcance y los límites descritos en la [guía del observador](observador-adversarial.md).
-Las fases posteriores y el aislamiento externo para agentes hostiles siguen pendientes.
+La [fase 2](adversarial-fase2.md) incorpora siete escenarios priorizados y relaciona
+las regresiones existentes. La matriz completa P0/P1 de esa fase, las fases
+posteriores y el aislamiento externo para agentes hostiles siguen pendientes.
 
 | Fase | Entrega revisable | Comprobación para avanzar |
 | --- | --- | --- |

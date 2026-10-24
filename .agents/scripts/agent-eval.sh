@@ -4,19 +4,31 @@ set -eu
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 SOURCE=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/agty-agent-eval.XXXXXX")
-trap 'rm -f "$TMP/artifacts" "$TMP/attempts" "$TMP/attempt-task" "$TMP/task" "$TMP/expected" "$TMP/actual"; rmdir "$TMP"' EXIT
+TMP=$(CDPATH= cd -- "$TMP" && pwd -P)
+cleanup_eval() {
+    # reader es una carpeta creada por esta ejecución, nunca la .git evaluada.
+    if [ -d "$TMP/reader" ] && [ ! -L "$TMP/reader" ]; then
+        READER_PATH=$(CDPATH= cd -- "$TMP/reader" && pwd -P)
+        [ "$READER_PATH" != "$TMP/reader" ] || rm -rf -- "$READER_PATH"
+    fi
+    rm -f "$TMP/artifacts" "$TMP/attempts" "$TMP/attempt-task" "$TMP/task" "$TMP/expected" "$TMP/actual" "$TMP/types"
+    rmdir "$TMP"
+}
+trap cleanup_eval EXIT
 trap 'exit 1' HUP INT TERM
 fail() { printf 'AGENT_EVAL_STATUS=FAIL\nERROR=%s\n' "$1"; exit 1; }
 . "$SCRIPT_DIR/task-artifacts.sh"
 . "$SCRIPT_DIR/task-attempts.sh"
+. "$SCRIPT_DIR/eval-git-reader.sh"
 usage() {
     cat <<'EOF'
 Uso: sh .agents/scripts/agent-eval.sh list
      sh .agents/scripts/agent-eval.sh prepare referencia|evidencia|alcance carpeta-nueva
-     sh .agents/scripts/agent-eval.sh check carpeta
+     sh .agents/scripts/agent-eval.sh check carpeta [PUNTO_BASE_CONSERVADO]
 prepare crea un repositorio ficticio sin remotos y un PEDIDO.md para tu agente.
 check usa el evaluador original y solo lee la copia; no ejecuta sus scripts.
 PASS significa que se cumplieron las comprobaciones observables del escenario.
+Conserva BASE_CHECKPOINT fuera de la copia y pásalo a check para fijar su procedencia.
 EOF
 }
 valid_case() { case "$1" in referencia|evidencia|alcance) ;; *) fail "Escenario desconocido" ;; esac; }
@@ -79,14 +91,23 @@ case "$COMMAND" in
             tasks deliver "$ID" 1 workspace/entregables/entrega-anterior.md "$BASE" 'Total anterior 75 contrastado con la referencia anterior' >/dev/null
         fi
         save 'Guardar el contexto inicial del escenario'
-        printf 'AGENT_EVAL_STATUS=PREPARED\nCASE=%s\nTASK_ID=%s\nDIRECTORY=%s\nPROMPT=%s/.agent-eval/PEDIDO.md\n' "$CASE" "$ID" "$TARGET" "$TARGET"
+        printf 'AGENT_EVAL_STATUS=PREPARED\nCASE=%s\nTASK_ID=%s\nDIRECTORY=%s\nPROMPT=%s/.agent-eval/PEDIDO.md\nBASE_CHECKPOINT=%s\n' "$CASE" "$ID" "$TARGET" "$TARGET" "$BASE"
         ;;
     check)
-        [ "$#" -eq 1 ] || fail "check requiere la carpeta preparada"
+        [ "$#" -ge 1 ] && [ "$#" -le 2 ] || fail "check requiere la carpeta preparada y, opcionalmente, el punto base conservado"
+        PIN=${2:-}
+        if [ "$#" -eq 2 ]; then
+            printf '%s\n' "$PIN" | LC_ALL=C grep -Eq '^([0-9a-f]{40}|[0-9a-f]{64})$' || fail "El punto base conservado debe ser una huella completa"
+        fi
         TARGET=$(CDPATH= cd -- "$1" && pwd -P) || fail "No existe la carpeta"
         cd "$TARGET"
-        [ -e .git ] || fail "La copia no es un repositorio"
+        eval_git_reader
         BASE=$(git rev-list --max-parents=0 HEAD)
+        ANCHOR=not_pinned
+        if [ -n "$PIN" ]; then
+            [ "$BASE" = "$PIN" ] || fail "El contrato no corresponde al punto base conservado"
+            ANCHOR=pinned
+        fi
         # El primer punto guarda el contrato. Las ediciones locales de PEDIDO.md no lo sustituyen.
         [ "$(git show "$BASE:.agent-eval/formato" 2>/dev/null)" = repo-as-agent-eval-v1 ] || fail "No es una copia preparada por este evaluador"
         CASE=$(git show "$BASE:.agent-eval/caso"); valid_case "$CASE"
@@ -148,7 +169,7 @@ case "$COMMAND" in
                     LC_ALL=C grep -Fxq 'Ahora: 4 unidades; total 100' "$TMP/actual" || fail "El informe no documenta el cambio de alcance solicitado"
                 ;;
         esac
-        printf 'AGENT_EVAL_STATUS=PASS\nCASE=%s\nTASK_ID=%s\nCHECKPOINT=%s\nSCOPE=observaciones del escenario; revisión semántica adicional necesaria\n' "$CASE" "$ID" "$(git rev-parse HEAD)"
+        printf 'AGENT_EVAL_STATUS=PASS\nCASE=%s\nTASK_ID=%s\nCHECKPOINT=%s\nCONTRACT_ANCHOR=%s\nSCOPE=observaciones del escenario; revisión semántica adicional necesaria\n' "$CASE" "$ID" "$(git rev-parse HEAD)" "$ANCHOR"
         ;;
     *) usage; fail "Operación desconocida" ;;
 esac

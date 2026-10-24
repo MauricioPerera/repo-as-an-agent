@@ -118,7 +118,10 @@ su contexto histórico; no los presentes como evidencia automática del acuerdo 
 
 Para evaluar un agente, consulta la [guía](../../../docs/evaluaciones-e-intentos.md)
 y prepara un escenario con `agent-eval.sh prepare`. Trabaja exclusivamente en la
-copia ficticia. Ejecuta `check` desde el repositorio original. Presenta el escenario,
+copia ficticia. Conserva `BASE_CHECKPOINT` devuelto por `prepare` fuera de la copia
+y pásalo a `check carpeta PUNTO_BASE_CONSERVADO` desde el repositorio original.
+El uso sin ese punto declara `CONTRACT_ANCHOR=not_pinned` y no acredita la
+procedencia del contrato. Presenta el escenario,
 el resultado y sus límites; un PASS comprueba condiciones observables y no certifica
 la veracidad de toda la actuación. Las simulaciones de CI no son pruebas de un modelo.
 

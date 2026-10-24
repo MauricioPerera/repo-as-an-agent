@@ -50,6 +50,17 @@ jobs:
           persist-credentials: false
       - name: Probar aislamiento de archivos, canarios y verificador independiente
         run: sh .agents/tests/run-adversarial-tests.sh
+      - name: Probar escenarios prioritarios del motor y sus evidencias (fase 2)
+        run: |
+          mkdir -p .tmp-test
+          if sh .agents/tests/run-adversarial-engine-tests.sh run .tmp-test/fase2 > .tmp-test/fase2.out; then
+            cat .tmp-test/fase2.out
+          else
+            cat .tmp-test/fase2.out
+            exit 1
+          fi
+          ENGINE_SEAL=$(sed -n 's/^EVIDENCE_SEAL=//p' .tmp-test/fase2.out)
+          sh .agents/tests/check-engine-evidence.sh .tmp-test/fase2 "$ENGINE_SEAL"
 
   landing:
     name: Validar la landing

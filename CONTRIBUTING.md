@@ -190,6 +190,22 @@ Si falla el trabajo de navegador en GitHub Actions, su artefacto
 El motor en `.agents/`, el gestor y la landing publicada mantienen sus requisitos
 anteriores. No añadas Playwright a sus scripts de ejecución ni a sus recursos públicos.
 
+## Segunda fase adversarial del motor
+
+Consulta la [cobertura y los límites](docs/adversarial-fase2.md) antes de añadir
+variantes. Usa controles válidos y negativos con códigos y causas comprobados;
+un error de herramientas no es un ataque rechazado. Ejecuta:
+
+```sh
+sh .agents/tests/run-adversarial-engine-tests.sh run
+```
+
+Conserva el directorio y la huella devueltos para ejecutar `verify` y
+`check-engine-evidence.sh`. Las siete filas son escenarios con varias aserciones,
+no siete modelos evaluados ni los 60 escenarios del catálogo. Los informes son
+privados y no se adjuntan automáticamente a CI. No copies datos humanos al ensayo
+ni conviertas las regresiones existentes en nuevos conteos.
+
 ## Guardar y enviar la propuesta
 
 Revisa qué archivos cambiaste y crea un punto de guardado con una nota descriptiva:

@@ -66,6 +66,10 @@ En tu primera interacción dentro de una sesión nueva:
   huellas conservadas por el observador fuera de la copia evaluada; no ejecutes
   sus scripts ni presentes un PASS de archivos como aislamiento del equipo o
   evaluación de un modelo. Las capturas son privadas y no se publican en Pages.
+- **Segunda fase adversarial priorizada:** `sh .agents/tests/run-adversarial-engine-tests.sh run`.
+  Consulta [la cobertura](docs/adversarial-fase2.md). Ejecuta solo sobre las copias
+  ficticias del runner; conserva sus informes y huellas en privado. Sus siete
+  escenarios deterministas no acreditan los 60 completos ni aislamiento del equipo.
 - **Operaciones seguras de Git (`git-ops.sh`):**
   - `sh .agents/scripts/git-ops.sh checkpoint "<nota clara en humano>" [--task ID ...]`
   - `sh .agents/scripts/git-ops.sh draft-create "<nombre-del-borrador>"`

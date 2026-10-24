@@ -148,7 +148,8 @@ Para evaluar a tu asistente con datos ficticios, prepara una carpeta nueva:
 mkdir -p .tmp-test
 sh .agents/scripts/agent-eval.sh prepare referencia .tmp-test/eval-referencia
 # Abre esa copia con el agente y pídele que complete .agent-eval/PEDIDO.md.
-sh .agents/scripts/agent-eval.sh check .tmp-test/eval-referencia
+# Conserva BASE_CHECKPOINT fuera de la copia al preparar el escenario.
+sh .agents/scripts/agent-eval.sh check .tmp-test/eval-referencia PUNTO_BASE_CONSERVADO
 ```
 
 Repite en carpetas nuevas con `evidencia` y `alcance`. La copia no tiene remotos
@@ -194,6 +195,17 @@ ya permite preparar controles ficticios, fijar un contrato externo, detectar fug
 de canarios y conservar capturas con huellas verificables mediante `adversarial.sh`.
 No ejecuta modelos ni acredita aislamiento del sistema operativo; el catálogo
 completo sigue pendiente de implementación y ejecución.
+
+La [segunda fase adversarial priorizada](docs/adversarial-fase2.md) añade siete
+escenarios deterministas de fallos de escritura, argumentos literales,
+credenciales preparadas, errores de lectura, contención y configuración del
+evaluador, incluida la sustitución de su contrato. Conserva evidencia privada con huellas y reutiliza las regresiones de
+memoria, tareas, ADD e intentos. No acredita una campaña completa ni aislamiento
+del equipo. Puedes ejecutarla sin instalar paquetes:
+
+```sh
+sh .agents/tests/run-adversarial-engine-tests.sh run
+```
 
 ## Landing y GitHub Pages
 
