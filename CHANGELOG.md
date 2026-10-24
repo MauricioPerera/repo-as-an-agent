@@ -2,13 +2,17 @@
 
 Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
-## Pendiente de publicación
+## [v1.4.1] - 2026-10-24
+
+Guía visual del observador adversarial presentado en v1.4.0 y acceso directo
+desde el README, con ejemplos, comandos copiables y límites del aislamiento.
 
 ### Añadido
 
 - [Sección del observador adversarial de v1.4.0 en la landing](https://mauricioperera.github.io/repo-as-an-agent/#observador), con ejemplos públicos ficticios de fugas propias, cruzadas y externas, y una demostración interactiva que distingue PASS, FAIL y ERROR.
 - Recorrido visual del contrato externo, las capturas privadas y las huellas de evidencia, con ejemplos de alteraciones del contrato, del verificador y de los informes. Los límites del aislamiento, las capacidades omitidas y el alcance de INF-01 se muestran de forma visible.
 - Tres botones de copia para el pedido, la preparación/comprobación y la verificación de evidencias; enlaces a la guía, al catálogo adversarial y a v1.4.0. La página no ejecuta pruebas, modelos ni operaciones sobre archivos.
+- Enlace directo desde el README a la nueva sección del observador adversarial de la landing.
 
 ### Actualizado
 
@@ -18,7 +22,8 @@ Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
 ### Verificación
 
-- **70 pruebas con Playwright**, incluidas **18 nuevas** para el observador en escritorio y móvil emulado, y **18 pruebas del sitio**, aprobadas localmente. La copia se contrasta con el portapapeles real; el diseño se comprueba entre **320 y 1280 px**, también con los comandos desplegados.
+- **70 pruebas con Playwright**, incluidas **18 nuevas** para el observador en escritorio y móvil emulado, y **18 pruebas del sitio**, aprobadas en [GitHub Actions](https://github.com/MauricioPerera/repo-as-an-agent/actions/runs/40140163937). La copia se contrasta con el portapapeles real; el diseño se comprueba entre **320 y 1280 px**, también con los comandos desplegados.
+- **18 comprobaciones del observador sobre la web publicada**, aprobadas sin fallos. El enlace se ha abierto desde el README de GitHub en escritorio y móvil emulado: sitúa la página al inicio de la sección y muestra su título de v1.4.0.
 
 ## [v1.4.0] - 2026-10-24
 
@@ -250,6 +255,7 @@ Primera versión estable de la plantilla.
 - Distribución bajo la [licencia MIT](LICENSE).
 - Copyright (c) 2026 Mauricio Perera.
 
+[v1.4.1]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.4.1
 [v1.2.1]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.2.1
 [v1.2.0]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.2.0
 [v1.1.1]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.1.1
