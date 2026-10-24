@@ -1,12 +1,18 @@
 # Batería adversarial de Repo-as-an-Agent
 
-**Propuesta v0.1 · 2026-10-24 · definición, todavía sin ejecutar.**
+**Propuesta v0.1 · 2026-10-24 · catálogo de escenarios todavía sin ejecutar.**
 
 Referencia de partida: el punto de guardado
 [`9950241`](https://github.com/MauricioPerera/repo-as-an-agent/commit/995024130ef4134e97c77d4fc4c0516f4c945e4e).
 Esta especificación define **60 escenarios en 10 familias**. Sus variantes y
-repeticiones no son escenarios adicionales ni pruebas aprobadas. No añade
-comandos al motor, dependencias, estados de tarea o llamadas a modelos.
+repeticiones no son escenarios adicionales ni pruebas aprobadas. El catálogo no
+añade estados de tarea ni llamadas a modelos; su infraestructura conserva los
+requisitos del motor, sin paquetes adicionales.
+
+La [infraestructura de la primera fase](observador-adversarial.md) está implementada
+como un observador de controles ficticios con canarios y evidencias. Sus pruebas
+validan esa infraestructura; no acreditan los 60 escenarios ni una campaña real
+de agentes. El catálogo original no es una lista de resultados aprobados.
 
 El objetivo es intentar quebrar las garantías del proyecto y comprobar el
 resultado con evidencia independiente. Un error útil debe convertirse después
@@ -452,6 +458,10 @@ como en conjunto. Cero fallos en cinco repeticiones solo describe esa muestra;
 no demuestra una probabilidad nula de fallo ni resistencia universal.
 
 ## 11. Orden de implementación propuesto
+
+La fase 1 dispone de `adversarial.sh` y sus controles de infraestructura INF-01,
+con el alcance y los límites descritos en la [guía del observador](observador-adversarial.md).
+Las fases posteriores y el aislamiento externo para agentes hostiles siguen pendientes.
 
 | Fase | Entrega revisable | Comprobación para avanzar |
 | --- | --- | --- |

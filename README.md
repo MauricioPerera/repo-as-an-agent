@@ -166,6 +166,7 @@ Para ejecutar la suite de pruebas deterministas en un entorno temporal aislado:
 sh .agents/tests/run-tests.sh
 sh .agents/tests/run-task-tests.sh
 sh .agents/tests/run-agent-eval-tests.sh
+sh .agents/tests/run-adversarial-tests.sh
 ```
 
 Incluye regresiones para archivos ignorados que colisionan con una restauración,
@@ -185,7 +186,11 @@ escritorio y móvil, incluidos los pedidos de tareas y `prompt.md`.
 
 La [propuesta de batería adversarial](docs/testing-adversarial.md) define 60
 escenarios para el motor, los datos, el agente y la web, con prioridades,
-evidencias y criterios de aprobación. Es una especificación pendiente de ejecutar.
+evidencias y criterios de aprobación. Su [primera fase](docs/observador-adversarial.md)
+ya permite preparar controles ficticios, fijar un contrato externo, detectar fugas
+de canarios y conservar capturas con huellas verificables mediante `adversarial.sh`.
+No ejecuta modelos ni acredita aislamiento del sistema operativo; el catálogo
+completo sigue pendiente de implementación y ejecución.
 
 ## Landing y GitHub Pages
 

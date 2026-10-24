@@ -61,6 +61,11 @@ En tu primera interacción dentro de una sesión nueva:
 - **Evaluar comportamiento:** `sh .agents/scripts/agent-eval.sh list`; prepara
   escenarios ficticios y evalúa sus resultados desde el repositorio original.
   Los controles simulados de CI no miden un modelo real.
+- **Observador adversarial (fase 1):** `sh .agents/scripts/adversarial.sh --help`.
+  Consulta [la guía](docs/observador-adversarial.md). Usa el comando confiable y
+  huellas conservadas por el observador fuera de la copia evaluada; no ejecutes
+  sus scripts ni presentes un PASS de archivos como aislamiento del equipo o
+  evaluación de un modelo. Las capturas son privadas y no se publican en Pages.
 - **Operaciones seguras de Git (`git-ops.sh`):**
   - `sh .agents/scripts/git-ops.sh checkpoint "<nota clara en humano>" [--task ID ...]`
   - `sh .agents/scripts/git-ops.sh draft-create "<nombre-del-borrador>"`

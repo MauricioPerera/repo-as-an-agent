@@ -45,6 +45,7 @@ Desde la carpeta principal del repositorio, ejecuta:
 sh .agents/tests/run-tests.sh
 sh .agents/tests/run-task-tests.sh
 sh .agents/tests/run-agent-eval-tests.sh
+sh .agents/tests/run-adversarial-tests.sh
 ```
 
 La suite prepara una copia temporal aislada para probar los guardados, los borradores, las restauraciones y la validación de memoria. Al terminar debe indicar `FAIL=0` y `TEST_SUITE_VERDICT=PASS`. Un resultado de fallo devuelve un código de salida distinto de cero; revisa las líneas `[FAIL]` y sus detalles antes de enviar tu propuesta.
@@ -90,6 +91,15 @@ en CI, sin llamadas a modelos. No presentes esos resultados como una medición
 del comportamiento de un agente real. Para esa evaluación, entrega a un agente
 el pedido de una copia preparada y aplica `check` desde el repositorio original,
 según la [guía de evaluaciones e intentos](docs/evaluaciones-e-intentos.md).
+
+La suite `.agents/tests/run-adversarial-tests.sh` comprueba el observador de la
+[primera fase adversarial](docs/observador-adversarial.md) con controles simulados.
+Debe indicar `ADVERSARIAL_TEST_VERDICT=PASS` y enumerar por separado las capacidades
+omitidas como SKIP. Prueba la huella externa del contrato, los canarios, la captura,
+los códigos PASS/FAIL/ERROR y la integridad de las evidencias. No ejecutes código
+de la copia evaluada ni publiques capturas privadas en artefactos de CI o Pages.
+El flujo ejecuta estos controles en un trabajo separado por sistema operativo;
+no se añaden dependencias ni estados al gestor y no se llama a modelos.
 
 ## Trabajar en la landing
 

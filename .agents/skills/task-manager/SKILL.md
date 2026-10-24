@@ -122,6 +122,11 @@ copia ficticia. Ejecuta `check` desde el repositorio original. Presenta el escen
 el resultado y sus límites; un PASS comprueba condiciones observables y no certifica
 la veracidad de toda la actuación. Las simulaciones de CI no son pruebas de un modelo.
 
+La [primera fase adversarial](../../../docs/observador-adversarial.md) añade un
+observador de archivos con canarios, controles ficticios y evidencias verificables.
+No modifica los estados ni registra intentos automáticamente. Conserva sus huellas
+fuera del alcance del evaluado y no presentes sus controles como una campaña real.
+
 ## Formato y diagnósticos
 
 Usa `sh .agents/scripts/tasks.sh lint` si una edición manual rompe el formato.
