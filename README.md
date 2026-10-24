@@ -126,6 +126,10 @@ Consulta la guía para el flujo completo de guardado, revisión y reapertura.
 
 ## Intentos de ejecución y evaluación del agente
 
+Consulta la [guía visual de evaluaciones e intentos de v1.3.0](https://mauricioperera.github.io/repo-as-an-agent/#evaluaciones)
+para ver ejemplos de desenlaces, evidencias y puntos de guardado, además de pedidos
+y comandos que puedes copiar.
+
 El [registro de intentos y los escenarios de evaluación](docs/evaluaciones-e-intentos.md)
 permiten revisar qué acción se intentó, con qué agente y herramienta, y qué se
 observó. Cada intento conserva el contexto inicial y un informe vinculado a un
