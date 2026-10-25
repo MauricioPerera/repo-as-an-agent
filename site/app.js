@@ -166,8 +166,19 @@
   });
 
   const narrowScreen = window.matchMedia("(max-width: 680px)");
+  const phase2Buttons = [...document.querySelectorAll("[data-phase2-case]")];
+  const contractButtons = [...document.querySelectorAll("[data-contract-case]")];
+  [phase2Buttons, contractButtons].forEach((buttons) => {
+    enableTabs(buttons, (active) => {
+      selectTab(buttons, active);
+      buttons.forEach((button) => {
+        byId(button.getAttribute("aria-controls")).hidden = button !== active;
+      });
+    });
+  });
   const updateTabOrientation = () => {
     document.querySelector(".demo-tabs").setAttribute("aria-orientation", narrowScreen.matches ? "horizontal" : "vertical");
+    document.querySelector(".phase2-scenarios").setAttribute("aria-orientation", narrowScreen.matches ? "horizontal" : "vertical");
   };
   updateTabOrientation();
   narrowScreen.addEventListener("change", updateTabOrientation);

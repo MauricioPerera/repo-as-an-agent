@@ -2,6 +2,37 @@
 
 Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
+## Pendiente de publicación
+
+### Añadido
+
+- [Sección de la segunda fase adversarial de v1.5.0 en la landing](https://mauricioperera.github.io/repo-as-an-agent/#fase2), con selector de los siete escenarios, sus prioridades, controles válidos, negativos y resultados ilustrativos.
+- Diagrama del punto inicial conservado por el operador y ejemplos interactivos
+  del contrato original, una copia sustituida y el uso sin punto fijado. Se
+  distingue la procedencia fijada de la comprobación de condiciones observables.
+- Cinco controles desplegables de evidencia y rutas: caso válido, temporal
+  solapado, ruta ambigua, informe alterado y paquete sustituido. Tres botones
+  copian el pedido, la suite con recibo externo y el flujo del contrato fijado.
+
+### Actualizado
+
+- Cabecera y navegación para destacar v1.5.0, conservando la versión y su enlace
+  generados automáticamente durante la publicación. Las secciones anteriores
+  mantienen sus anclas y controles.
+- Guía técnica con la suite de la segunda fase; límites, privacidad de los
+  informes y cobertura parcial visibles. La landing no ejecuta pruebas ni modelos.
+- Pruebas de publicación para mantener los informes, manifiestos y huellas
+  privados fuera del artefacto público.
+
+### Verificación
+
+- **92 pruebas con Playwright**, incluidas **22 nuevas** para los siete escenarios,
+  el contrato, los controles de integridad y la copia en escritorio y móvil emulado.
+  Se contrasta el portapapeles real y el diseño entre **320 y 1280 px**, con los
+  comandos y controles desplegados.
+- **18 pruebas del sitio** aprobadas. El motor mantiene los cuatro estados y
+  cero dependencias nuevas.
+
 ## [v1.5.0] - 2026-10-24
 
 Segunda fase adversarial priorizada para el motor y los datos: siete escenarios

@@ -249,8 +249,8 @@ async function expectObserverCase(page, key) {
   }
 }
 
-test('v1.4.0 destaca el observador y distingue PASS, FAIL y ERROR', async ({ page, isMobile }) => {
-  await activate(page, page.locator('.hero-feature'), isMobile);
+test('v1.4.0 conserva el observador y distingue PASS, FAIL y ERROR', async ({ page, isMobile }) => {
+  await activate(page, page.locator('.site-header nav a[href="#observador"]'), isMobile);
   await expect(page).toHaveURL(/#observador$/);
   await expect(page.locator('#observer-title')).toBeInViewport();
   await expect(page.locator('#observador .eyebrow')).toContainText('v1.4.0');
@@ -307,7 +307,7 @@ test('el observador muestra los límites de aislamiento e integridad y enlaza su
   await expect(page.locator('.observer-limits')).toContainText('512 entradas');
   await expect(page.locator('.observer-limits')).toContainText('1 MiB');
   await expect(page.locator('.observer-limits')).toContainText('8 MiB');
-  await expect(page.locator('.observer-limits')).toContainText('60 escenarios del catálogo siguen pendientes');
+  await expect(page.locator('.observer-limits')).toContainText('cobertura completa del catálogo de 60 escenarios sigue pendiente');
   await expect(page.locator('.observer-test-summary')).toContainText('35 + 1 SKIP');
   await expect(page.locator('.observer-links a').nth(0)).toHaveAttribute('href', /\/docs\/observador-adversarial\.md$/);
   await expect(page.locator('.observer-links a').nth(1)).toHaveAttribute('href', /\/docs\/testing-adversarial\.md$/);
@@ -363,6 +363,204 @@ test('el observador se adapta de 320 a 1280 px con sus comandos desplegados', as
       await page.locator(`#observer-tab-${sample.key}`).click();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
       await expect(page.locator(`#${sample.panel} .observer-reason`)).toBeVisible();
+    }
+  }
+});
+
+const phase2Cases = [
+  { key: 'rec06', id: 'REC-06', priority: 'P0', proof: 'El documento nuevo, la tarea y el punto anterior se conservan' },
+  { key: 'ent01', id: 'ENT-01', priority: 'P0', proof: 'El centinela NO-EJECUTAR no aparece' },
+  { key: 'ent03', id: 'ENT-03', priority: 'P0', proof: 'La corrección local no oculta la credencial ficticia preparada' },
+  { key: 'ent06', id: 'ENT-06', priority: 'P1', proof: 'No convierte el error en tamaño cero' },
+  { key: 'tar06', id: 'TAR-06', priority: 'P0', proof: 'la nota manual permanece intacta' },
+  { key: 'eva02', id: 'EVA-02', priority: 'P0', proof: 'El centinela no aparece y el índice observado permanece intacto' },
+  { key: 'eva04', id: 'EVA-04', priority: 'P0', proof: 'otra copia válida, con un historial distinto' },
+];
+const contractCases = [
+  { key: 'original', output: 'CONTRACT_ANCHOR=pinned' },
+  { key: 'swapped', output: 'AGENT_EVAL_STATUS=FAIL' },
+  { key: 'unpinned', output: 'CONTRACT_ANCHOR=not_pinned' },
+];
+
+async function expectPhase2Case(page, key) {
+  await expect(page.locator('[data-phase2-case][aria-selected="true"]')).toHaveCount(1);
+  await expect(page.locator('.phase2-panel:visible')).toHaveCount(1);
+  for (const sample of phase2Cases) {
+    await expect(page.locator(`#phase2-tab-${sample.key}`)).toHaveAttribute('aria-selected', String(sample.key === key));
+    await expect(page.locator(`#phase2-tab-${sample.key}`)).toHaveJSProperty('tabIndex', sample.key === key ? 0 : -1);
+    if (sample.key === key) await expect(page.locator(`#phase2-${sample.key}`)).toBeVisible();
+    else await expect(page.locator(`#phase2-${sample.key}`)).toBeHidden();
+  }
+}
+
+async function expectPhase2Contract(page, key) {
+  await expect(page.locator('[data-contract-case][aria-selected="true"]')).toHaveCount(1);
+  await expect(page.locator('.phase2-contract-panel:visible')).toHaveCount(1);
+  for (const sample of contractCases) {
+    await expect(page.locator(`#phase2-contract-tab-${sample.key}`)).toHaveAttribute('aria-selected', String(sample.key === key));
+    await expect(page.locator(`#phase2-contract-tab-${sample.key}`)).toHaveJSProperty('tabIndex', sample.key === key ? 0 : -1);
+    if (sample.key === key) await expect(page.locator(`#phase2-contract-${sample.key}`)).toBeVisible();
+    else await expect(page.locator(`#phase2-contract-${sample.key}`)).toBeHidden();
+  }
+}
+
+test('v1.5.0 destaca los siete escenarios con sus controles válidos y negativos', async ({ page, isMobile }) => {
+  await activate(page, page.locator('.hero-feature'), isMobile);
+  await expect(page).toHaveURL(/#fase2$/);
+  await expect(page.locator('#phase2-title')).toBeInViewport();
+  await expect(page.locator('#fase2 .eyebrow')).toContainText('v1.5.0');
+  await expect(page.locator('.phase2-scoreboard strong')).toHaveText(['7/7', '5/5', '0']);
+  await expect(page.locator('[data-phase2-case] code')).toHaveText(phase2Cases.map(sample => sample.id));
+  await expect(page.locator('[data-phase2-case] small')).toHaveText(phase2Cases.map(sample => sample.priority));
+  for (const sample of phase2Cases) {
+    await activate(page, page.locator(`#phase2-tab-${sample.key}`), isMobile);
+    await expectPhase2Case(page, sample.key);
+    const panel = page.locator(`#phase2-${sample.key}`);
+    await expect(panel.locator('.mini-label')).toContainText(sample.id);
+    await expect(panel.locator('.phase2-pair > div')).toHaveCount(2);
+    await expect(panel.locator('.phase2-pair dt').first()).toHaveText('Control válido');
+    await expect(panel.locator('.phase2-result span')).toHaveText('PASS del escenario');
+    await expect(panel).toContainText(sample.proof);
+    await expect(panel).toHaveCSS('animation-name', 'none');
+  }
+});
+
+test('los siete escenarios responden al teclado y mantienen independientes las otras demos', async ({ page, isMobile }) => {
+  await expect(page.locator('.phase2-scenarios')).toHaveAttribute('aria-orientation', isMobile ? 'horizontal' : 'vertical');
+  await page.locator('#phase2-tab-rec06').focus();
+  for (const [key, selected] of [
+    ['ArrowDown', 'ent01'], ['ArrowRight', 'ent03'], ['ArrowDown', 'ent06'],
+    ['ArrowRight', 'tar06'], ['ArrowRight', 'eva02'], ['ArrowDown', 'eva04'],
+    ['ArrowRight', 'rec06'], ['ArrowLeft', 'eva04'], ['Home', 'rec06'], ['End', 'eva04'],
+  ]) {
+    await page.keyboard.press(key);
+    await expectPhase2Case(page, selected);
+    await expect(page.locator(`#phase2-tab-${selected}`)).toBeFocused();
+  }
+  await expectSelected(page, 'pending');
+  await expectOutcome(page, 'success');
+  await expectObserverCase(page, 'clean');
+  await expectPhase2Contract(page, 'original');
+});
+
+test('EVA-04 enlaza al diagrama del punto conservado fuera de la copia', async ({ page, isMobile }) => {
+  await activate(page, page.locator('#phase2-tab-eva04'), isMobile);
+  await activate(page, page.locator('#phase2-eva04 a[href="#phase2-contract"]'), isMobile);
+  await expect(page).toHaveURL(/#phase2-contract$/);
+  await expect(page.locator('#phase2-contract-title')).toBeInViewport();
+  await expect(page.locator('.phase2-chain > li')).toHaveCount(3);
+  await expect(page.locator('.phase2-chain')).toContainText('BASE_CHECKPOINT');
+  await expect(page.locator('.phase2-chain')).toContainText('No lo vuelve a obtener de la copia evaluada');
+  await expect(page.locator('.phase2-chain')).toContainText('check copia PUNTO_BASE_CONSERVADO');
+});
+
+test('el contrato distingue el original, una copia sustituida y el uso sin punto fijado', async ({ page, isMobile }) => {
+  for (const sample of contractCases) {
+    await activate(page, page.locator(`#phase2-contract-tab-${sample.key}`), isMobile);
+    await expectPhase2Contract(page, sample.key);
+    await expect(page.locator(`#phase2-contract-${sample.key} pre`)).toContainText(sample.output);
+  }
+  await expect(page.locator('#phase2-contract-original')).toContainText('Fijar el contrato por sí solo no completa el pedido');
+  await expect(page.locator('#phase2-contract-swapped')).toContainText('El contrato no corresponde al punto base conservado');
+  await expect(page.locator('#phase2-contract-unpinned')).toContainText('no acredita la procedencia del contrato');
+});
+
+test('las pestañas del contrato admiten teclado sin cambiar el escenario elegido', async ({ page }) => {
+  await page.locator('#phase2-contract-tab-original').focus();
+  for (const [key, selected] of [
+    ['ArrowRight', 'swapped'], ['ArrowDown', 'unpinned'], ['ArrowRight', 'original'],
+    ['ArrowLeft', 'unpinned'], ['Home', 'original'], ['End', 'unpinned'],
+  ]) {
+    await page.keyboard.press(key);
+    await expectPhase2Contract(page, selected);
+    await expect(page.locator(`#phase2-contract-tab-${selected}`)).toBeFocused();
+  }
+  await expectPhase2Case(page, 'rec06');
+});
+
+test('los cinco controles de evidencia se despliegan con el resultado y la causa correctos', async ({ page, isMobile }) => {
+  const checks = page.locator('.phase2-check');
+  await expect(checks).toHaveCount(5);
+  await expect(checks.locator('summary strong')).toHaveText([
+    'Evidencia válida', 'Temporal dentro del informe', 'Ruta ambigua', 'Informe alterado', 'Paquete sustituido',
+  ]);
+  const outputs = ['ENGINE_EVIDENCE_STATUS=PASS', 'TEMP_DIRECTORY_OVERLAP', 'DESTINATION_EXISTS_OR_INVALID', 'EVIDENCE_INTEGRITY_ERROR', 'EVIDENCE_INTEGRITY_ERROR'];
+  for (let index = 0; index < outputs.length; index++) {
+    const check = checks.nth(index);
+    if (!await check.evaluate(element => element.open)) await activate(page, check.locator('summary'), isMobile);
+    await expect(check.locator('.phase2-check-example')).toBeVisible();
+    await expect(check.locator('pre')).toContainText(outputs[index]);
+    if (index) await expect(check.locator('pre')).toContainText('ENGINE_STATUS=ERROR');
+    else await expect(check).toContainText('Solo acredita integridad');
+  }
+  await expect(checks.nth(2)).toContainText('El destino no se crea');
+  await expect(checks.nth(4)).toContainText('manifiesto autoconsistente');
+  await activate(page, checks.nth(4).locator('summary'), isMobile);
+  await expect(checks.nth(4).locator('.phase2-check-example')).toBeHidden();
+});
+
+test('la segunda fase declara sus límites y conserva los enlaces de la primera', async ({ page, isMobile }) => {
+  await activate(page, page.locator('.site-header nav a[href="#fase2"]'), isMobile);
+  await expect(page).toHaveURL(/#fase2$/);
+  await expect(page.locator('.phase2-demo-note')).toContainText('no ejecuta pruebas, modelos ni operaciones sobre archivos');
+  await expect(page.locator('.phase2-scope')).toContainText('OS_ISOLATION=not_attested');
+  await expect(page.locator('.phase2-scope')).toContainText('cobertura completa de los 60 escenarios sigue pendiente');
+  await expect(page.locator('.phase2-scope')).toContainText('integridad, no autoría');
+  await expect(page.locator('.phase2-lab-note')).toContainText('no es un nuevo estado de tarea');
+  await expect(page.locator('.phase2-links a').nth(0)).toHaveAttribute('href', /\/docs\/adversarial-fase2\.md$/);
+  await expect(page.locator('.phase2-links a').nth(1)).toHaveAttribute('href', /\/releases\/tag\/v1\.5\.0$/);
+  await expect(page.locator('.phase2-links a').nth(2)).toHaveAttribute('href', /\/actions\/runs\/40144652125$/);
+  await activate(page, page.locator('.phase2-links a[href="#observador"]'), isMobile);
+  await expect(page).toHaveURL(/#observador$/);
+  await expect(page.locator('#observer-title')).toBeInViewport();
+});
+
+test('copia el pedido de segunda fase con los siete escenarios y la evidencia privada', async ({ page, isMobile }) => {
+  const expected = (await page.locator('#phase2-request').textContent()).trim();
+  for (const sample of phase2Cases) expect(expected).toContain(sample.id);
+  expect(expected).toContain('cinco controles');
+  expect(expected).toContain('BASE_CHECKPOINT fuera de su alcance');
+  expect(expected).toContain('evidencias en privado');
+  expect(expected).toContain('cuatro estados');
+  await expectCopied(page, page.locator('[data-copy-target="phase2-request"]'), expected, isMobile);
+});
+
+test('copia la suite y la comprobación de los cinco controles con un recibo externo', async ({ page, isMobile }) => {
+  await activate(page, page.locator('.phase2-technical > summary'), isMobile);
+  const expected = (await page.locator('#phase2-suite-code').textContent()).trim();
+  expect(expected).toContain('run-adversarial-engine-tests.sh run');
+  expect(expected).toContain('run-adversarial-engine-tests.sh verify RUTA_EVIDENCE HUELLA_CONSERVADA');
+  expect(expected).toContain('check-engine-evidence.sh RUTA_EVIDENCE HUELLA_CONSERVADA');
+  expect(expected).toContain('EVIDENCE_SEAL');
+  expect(expected).toContain('ENGINE_EVIDENCE_STATUS=PASS acredita integridad de archivos');
+  await expectCopied(page, page.getByRole('button', { name: 'Copiar suite de la segunda fase', exact: true }), expected, isMobile);
+});
+
+test('copia el contrato con el punto inicial conservado antes de completar el escenario', async ({ page, isMobile }) => {
+  await activate(page, page.locator('.phase2-technical > summary'), isMobile);
+  const expected = (await page.locator('#phase2-anchor-code').textContent()).trim();
+  expect(expected).toContain('agent-eval.sh prepare evidencia .tmp-test/evaluacion-fase2');
+  expect(expected).toContain('agent-eval.sh check .tmp-test/evaluacion-fase2 PUNTO_BASE_CONSERVADO');
+  expect(expected.indexOf('conserva BASE_CHECKPOINT')).toBeLessThan(expected.indexOf('completa el escenario'));
+  expect(expected.indexOf('completa el escenario')).toBeLessThan(expected.indexOf('agent-eval.sh check'));
+  expect(expected).toContain('No vuelvas a obtener el punto inicial de la copia evaluada');
+  expect(expected).not.toContain('rev-parse');
+  await expectCopied(page, page.getByRole('button', { name: 'Copiar ejemplo de contrato fijado', exact: true }), expected, isMobile);
+});
+
+test('la segunda fase se adapta de 320 a 1280 px con ejemplos y controles abiertos', async ({ page }) => {
+  await page.locator('.phase2-technical').evaluate(element => { element.open = true; });
+  await page.locator('.phase2-check').evaluateAll(elements => elements.forEach(element => { element.open = true; }));
+  for (const width of [320, 390, 680, 900, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const sample of phase2Cases) {
+      await page.locator(`#phase2-tab-${sample.key}`).click();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    }
+    for (const sample of contractCases) {
+      await page.locator(`#phase2-contract-tab-${sample.key}`).click();
+      await expect(page.locator(`#phase2-contract-${sample.key} pre`)).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     }
   }
 });

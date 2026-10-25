@@ -174,6 +174,11 @@ PASS/FAIL/ERROR, navegación del contrato y las evidencias, tres botones de copi
 y límites de aislamiento visibles. Conserva la separación entre una demostración
 web, los controles simulados de infraestructura y una campaña real de agentes.
 Los contratos, canarios y capturas de los ensayos permanecen fuera de `_site/`.
+La sección de v1.5.0 añade los siete escenarios de la segunda fase, sus controles
+válidos y negativos, los tres ejemplos del contrato fijado y cinco controles
+desplegables de integridad. Las pruebas verifican su navegación independiente,
+teclado, enlaces y los tres botones de copia, también entre 320 y 1280 px.
+La página usa ejemplos estáticos: no ejecuta los ensayos ni consulta un modelo.
 Comprueban el contenido real copiado por todos los botones, incluidos los ejemplos
 técnicos y `prompt.md`, y las alternativas cuando el navegador deniega la copia.
 Se ejecutan en serie para evitar interferencias entre portapapeles.

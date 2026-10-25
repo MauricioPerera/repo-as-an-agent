@@ -31,6 +31,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn("NUEVO EN v1.2.0", html)
         self.assertIn("NUEVO EN v1.3.0", html)
         self.assertIn("NUEVO EN v1.4.0", html)
+        self.assertIn("NUEVO EN v1.5.0", html)
         self.assertIn("EVALÚA Y CONSERVA", html)
 
     def test_copy_without_releases_links_to_its_own_releases(self):
@@ -149,7 +150,9 @@ class LandingTests(unittest.TestCase):
             for private in ("workspace/private.txt", "knowledge/private.md", ".env", "site/private.txt",
                             "tests/browser/node_modules/example/index.js", "tests/browser/test-results/trace.zip",
                             ".tmp-test/ensayo/observador/contrato/canario-externo",
-                            ".tmp-test/ensayo/observador/ejecuciones/informe.md"):
+                            ".tmp-test/ensayo/observador/ejecuciones/informe.md",
+                            ".tmp-test/fase2/informe.md", ".tmp-test/fase2/motor.tsv",
+                            ".tmp-test/fase2/huellas.tsv"):
                 path = root / private
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("NO PUBLICAR", encoding="utf-8")
