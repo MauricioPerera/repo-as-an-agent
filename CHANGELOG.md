@@ -2,7 +2,11 @@
 
 Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 
-## Pendiente de publicación
+## [v1.5.0] - 2026-10-24
+
+Segunda fase adversarial priorizada para el motor y los datos: siete escenarios
+deterministas, contrato inicial fijado y cinco controles de integridad y rutas
+de las evidencias, sin dependencias nuevas.
 
 ### Añadido
 
@@ -25,6 +29,39 @@ Novedades y correcciones de las versiones publicadas de Repo-as-an-Agent.
 - La preparación devuelve un punto base que puede conservarse externamente y
   pasarse al evaluador para rechazar la sustitución del contrato o del historial.
   El uso sin ese punto conserva compatibilidad e informa la procedencia no fijada.
+
+### Siete escenarios priorizados
+
+| ID | Prioridad | Comprobación |
+| --- | --- | --- |
+| REC-06 | P0 | Conservar documentos, tareas e historial ante fallos de guardado y escritura. |
+| ENT-01 | P0 | Conservar argumentos como datos literales, sin ejecutar su contenido. |
+| ENT-03 | P0 | Bloquear credenciales ficticias preparadas aunque se corrija solo el disco. |
+| ENT-06 | P1 | Bloquear errores al leer el tamaño o contenido preparado. |
+| TAR-06 | P0 | Conservar bloqueos ajenos y detectar una edición concurrente sin sobrescribirla. |
+| EVA-02 | P0 | Evitar la ejecución de configuración, filtros y hooks de la copia evaluada; rechazar metadatos y objetos externos no admitidos. |
+| EVA-04 | P0 | Fijar el contrato original y rechazar su sustitución, ignorando referencias de reemplazo. |
+
+### Contrato fijado y evidencias
+
+- `prepare` devuelve `BASE_CHECKPOINT`, que se conserva fuera de la copia y se
+  pasa a `check`. Con el punto original declara `CONTRACT_ANCHOR=pinned`; una
+  copia con otra raíz o metadatos del escenario alterados se rechaza. Mantiene puntos SHA-1 y
+  SHA-256 cuando Git los admite. El uso anterior sin punto declara `not_pinned`.
+- Los cinco controles cubren evidencia válida, temporales que invaden el informe,
+  rutas ambiguas, un informe alterado y un paquete sustituido aunque su manifiesto
+  sea autoconsistente. La verificación de integridad usa un recibo externo y
+  declara `ENGINE_EVIDENCE_STATUS`, sin aprobar por sí sola la campaña.
+
+### Verificación
+
+- **7 de 7 escenarios y 5 de 5 controles de evidencia aprobados** en Linux, macOS
+  y Windows, sin variantes omitidas, en la [ejecución funcional verificada de
+  GitHub Actions](https://github.com/MauricioPerera/repo-as-an-agent/actions/runs/40144652125).
+  Sus **ocho comprobaciones** finalizaron correctamente, incluidas las suites
+  anteriores del motor, del observador y de la landing.
+- Reejecución local de los siete escenarios y los cinco controles, también aprobada.
+  [Guía de uso, trazabilidad y variantes pendientes](docs/adversarial-fase2.md).
 
 La cobertura es parcial y determinista: no acredita una campaña de agentes,
 aislamiento del sistema operativo ni todos los escenarios del catálogo. Se
@@ -283,6 +320,7 @@ Primera versión estable de la plantilla.
 - Distribución bajo la [licencia MIT](LICENSE).
 - Copyright (c) 2026 Mauricio Perera.
 
+[v1.5.0]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.5.0
 [v1.4.1]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.4.1
 [v1.2.1]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.2.1
 [v1.2.0]: https://github.com/MauricioPerera/repo-as-an-agent/releases/tag/v1.2.0
